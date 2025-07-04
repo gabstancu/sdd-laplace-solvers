@@ -16,7 +16,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 find_package(Boost REQUIRED COMPONENTS iostreams)
 find_package(Eigen3 REQUIRED NO_MODULE)
 
-link_directories(/opt/homebrew/opt/ginac/lib)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include

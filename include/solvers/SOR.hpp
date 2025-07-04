@@ -45,7 +45,7 @@ struct SOR
              /* ----------- matrix based ----------- */
              // u = K * (omega * b - (omega * U + (omega - 1) * D) * u);
 
-            if (res < TOL) return u;
+            if (res < tol) return u;
         }
         return;
     }
