@@ -226,7 +226,6 @@ Eigen::MatrixXd SOR (Eigen::MatrixXd A, Eigen::VectorXd b, Eigen::VectorXd u_0, 
             return u;
         }
     }
-
     return u;
 }
 

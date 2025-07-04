@@ -78,6 +78,10 @@ int main ()
     DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(A);
     PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
     system.solve(solver);
+    // std::cout << system.u << '\n';
+
+    ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
+    system.solve(CG);
     std::cout << system.u << '\n';
 
     // Eigen::VectorXd u = Conjugate_Gradient(A, b, u_0);
