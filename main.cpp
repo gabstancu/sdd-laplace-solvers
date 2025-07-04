@@ -1,5 +1,3 @@
-// #include "solvers.hpp"
-// #include "PDE.hpp"
 #include "Eigen/Eigen"
 #include <string>
 #include <ginac/ginac.h>
@@ -75,32 +73,14 @@ int main ()
     Eigen::VectorXd u_0 = Eigen::VectorXd::Zero(N); // initial guess
     LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system{A, b, u_0};
 
-    DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(A);
-    PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
-    system.solve(solver);
+    // DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(A);
+    // PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
+    // system.solve(solver);
     // std::cout << system.u << '\n';
 
     ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
     system.solve(CG);
     std::cout << system.u << '\n';
-
-    // Eigen::VectorXd u = Conjugate_Gradient(A, b, u_0);
-    // std::cout << u << '\n';
-
-    /* test with other preconditioners */
-    // Eigen::MatrixXd precon = A.diagonal().asDiagonal().inverse();
-    // std::cout << precon << '\n';
-    // Eigen::VectorXd u = Preconditioned_Conjugate_Gradient(A, b, u_0, precon); 
-    // std::cout << u << '\n';
-
-    // Eigen::VectorXd u = Jacobi(A, b, u_0); 
-    // std::cout << "u\n" << u << "\n\n";
-
-    // Eigen::VectorXd u = Gauss_Seidel(A, b, u_0); 
-    // std::cout << "u\n" << u << "\n\n";
-
-    // Eigen::VectorXd u = SOR(A, b, u_0, 1.05); 
-    // std::cout << "u\n" << u << "\n\n";
 
     return 0;
 }
