@@ -69,7 +69,7 @@ int main ()
     Eigen::VectorXd x_exact(N);
     x_exact << 1, 2, 3, 4, 5;
 
-    Eigen::VectorXd b = A * x_exact;
+    Eigen::VectorXd  b  = A * x_exact;
     Eigen::VectorXd u_0 = Eigen::VectorXd::Zero(N); // initial guess
     LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system{A, b, u_0};
 

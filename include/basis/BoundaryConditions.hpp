@@ -7,10 +7,10 @@
 
 enum class Side { Top, Bottom, Left, Right };
 
+using BoundaryType = std::variant<GiNaC::ex, double>;
+
 struct BoundaryCondition
 {
-    using BoundaryType = std::variant<GiNaC::ex, double>;
-
     std::optional<BoundaryType> expr = std::nullopt;
     Side side;
 
@@ -33,7 +33,10 @@ struct BoundaryCondition
 
 struct BoundaryConditions
 {
-   
+    BoundaryCondition top{std::nullopt, Side::Top}, 
+                      bottom{std::nullopt, Side::Bottom}, 
+                      left{std::nullopt, Side::Left}, 
+                      right{std::nullopt, Side::Right} ;
 };
 
 
