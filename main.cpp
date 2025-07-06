@@ -17,7 +17,7 @@ std::string get_home_directory ()
 
 int main ()
 {   
-    int GRID_SIZE = 8;
+    int GRID_SIZE = 20;
 
     std::vector<GiNaC::symbol> variables;
     GiNaC::symbol x_("x"), y_("y"); 

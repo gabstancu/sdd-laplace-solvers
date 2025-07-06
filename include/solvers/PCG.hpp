@@ -26,7 +26,8 @@ struct PCG
         if (r.norm() / b_norm < tol) return;
 
         for (int k = 0; k < max_iters; k++)
-        {
+        {   
+            // std::cout << "Iteration: " << k+1 << '\n';
             Vector Ad = A * d;
             Vector r_prev = r;
             Vector zeta_prev = zeta;

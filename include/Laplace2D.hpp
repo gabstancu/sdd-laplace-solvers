@@ -105,7 +105,6 @@ struct Laplace2D
                     system.b(k) -= grid(i, j - 1);
                 else
                     system.A(k, k - 1) = 1.0;
-
             }
         }
         return system;
@@ -138,6 +137,11 @@ struct Laplace2D
             }
             file << '\n';
         }
+    }
+
+    void print ()
+    {
+        
     }
 };
 
