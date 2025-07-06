@@ -69,16 +69,75 @@ struct Laplace2D
         LinearSystem<Matrix, Vector> system;
         int N = GRID_SIZE - 2; // inner grid dimension
         int dim = int(std::pow(N, 2));
+
+        system.A = Eigen::MatrixXd::Zero(dim, dim);
+        system.b = Eigen::VectorXd::Zero(dim);
+        system.u = Eigen::VectorXd::Zero(dim);
+
+        /* -4 u_{i, j} + u_{i+1, j} + u_{i-1, j} + u_{i, j+1} + u_{i, j-1} = b_{k} */
+        int k;
+        for (int i = 1; i <= N; i++)
+        {
+            for (int j = 1; j <= N; j++)
+            {
+                k = (i - 1) * N + (j - 1);
+
+                system.A(k, k) = -4;
+
+                if (i == N) // bottom neighbor
+                    system.b(k) -= grid(i + 1, j);
+                else
+                    system.A(k, k + N) = 1.0;
+
+                if (i == 1) // top neighbor
+                    system.b(k) -= grid(i - 1, j);
+                else
+                    system.A(k, k - N) = 1.0;
+
+
+                if (j == N) // right neighbor
+                    system.b(k) -= grid(i, j + 1);
+                else
+                    system.A(k, k + 1) = 1.0;
+
+
+                if (j == 1) // left neighbor
+                    system.b(k) -= grid(i, j - 1);
+                else
+                    system.A(k, k - 1) = 1.0;
+
+            }
+        }
+        return system;
     }
 
-    void fill_grid ()
+    void fill_grid (Vector u)
     {
+        int N = this->grid.rows();
+        int K = u.size();
+        int i, j;
 
+        for (int k = 0; k < K; k++)
+        {
+            i = k / (N-2) + 1;
+            j = k % (N-2) + 1;
+            this->grid(i, j) = u(k);
+        }
     }
 
-    void save_grid (std::string label)
-    {
+    void save_grid (std::string filename)
+    {   
+        int N = this->grid.rows();
+        std::ofstream file(filename);
 
+        for (int i = 0; i < N; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                file << this->grid(i, j) << " ";   
+            }
+            file << '\n';
+        }
     }
 };
 

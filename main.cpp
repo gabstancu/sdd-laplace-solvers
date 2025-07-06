@@ -17,13 +17,13 @@ std::string get_home_directory ()
 
 int main ()
 {   
-    int GRID_SIZE = 10;
+    int GRID_SIZE = 8;
 
     std::vector<GiNaC::symbol> variables;
     GiNaC::symbol x_("x"), y_("y"); 
     variables.push_back(x_); variables.push_back(y_);
 
-    GiNaC::ex  top   = GiNaC::sin(GiNaC::Pi * x_);
+    GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_);
     GiNaC::ex bottom = GiNaC::pow(x_, 2) + GiNaC::pow(y_, 2);
     double left  = 4;
     double right = 2;
@@ -33,38 +33,23 @@ int main ()
     laplace.bc.bottom.expr = bottom;
     laplace.bc.left.expr = left;
     laplace.bc.right.expr = right;
-
     laplace.initialise_grid();
     std::cout << laplace.grid << '\n';
-    
-    // BoundaryConditions bc;
-    // bc.top = top; 
-    // bc.bottom = bottom;
-    // bc.left = left;
-    // bc.right = right;
 
-    // Eigen::MatrixXd grid = initialise_grid(GRID_SIZE, bc, variables);
-    // std::cout << grid << "\n\n";
+    LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
+    DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(system.A);
+    PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
+    system.solve(solver);
+    laplace.fill_grid(system.u);
 
-    // Eigen::MatrixXd A; Eigen::VectorXd b; Eigen::VectorXd u;
-
-    // construct_system(grid, GRID_SIZE, A, b, u);
-
-    // Eigen::VectorXd u_0 = u; // initial guess
-    // u = Conjugate_Gradient(A, b, u_0);
-    // std::cout << "A:\n" << A << "\n\n";
-    // std::cout << "b:\n" << b << "\n\n";
-    // std::cout << "u:\n" << u << "\n\n";
-
-    // fill_grid(grid, u);
-    // std::cout << "grid:\n" << grid << "\n\n";
+    std::cout << system.u << '\n';
+    std::cout << laplace.grid << '\n';
 
     // for (int dim = 8; dim <= 96; dim+=8)
     // {
     //     std::cout << "dim: " << dim << '\n';
     // }
 
-    
 
     /* ---------------------- test solvers ---------------------- */
     // int N = 5;
