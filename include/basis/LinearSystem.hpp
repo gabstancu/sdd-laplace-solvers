@@ -10,7 +10,7 @@ struct LinearSystem
     int N = A.rows();
 
     template<typename Solver>
-    void solve(const Solver& solver)
+    void solve(Solver& solver)
     {
         solver.solve(*this);
     }

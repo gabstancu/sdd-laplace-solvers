@@ -1,6 +1,7 @@
 #ifndef JACOBI_HPP
 #define JACOBI_HPP
 
+#include "utils/SolverLog.hpp"
 template<typename Matrix, typename Vector>
 struct Jacobi
 {

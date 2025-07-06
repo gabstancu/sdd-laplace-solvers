@@ -1,6 +1,7 @@
 #ifndef SOR_HPP
 #define SOR_HPP
 
+#include "utils/SolverLog.hpp"
 template<typename Matrix, typename Vector>
 struct SOR
 {

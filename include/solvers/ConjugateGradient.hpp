@@ -1,6 +1,7 @@
 #ifndef CONJUGATE_GRADIENT_HPP
 #define CONJUGATE_GRADIENT_HPP
 
+#include "utils/SolverLog.hpp"
 template<typename Matrix, typename Vector>
 struct ConjugateGradient
 {

@@ -8,7 +8,7 @@
 
 enum class Side { Top, Bottom, Left, Right };
 
-std::string to_string(Side side) {
+inline std::string to_string(Side side) {
     switch (side) {
         case Side::Top: return "Top";
         case Side::Bottom: return "Bottom";
@@ -20,7 +20,7 @@ std::string to_string(Side side) {
 
 enum class Type { Dirichlet, Neumann, Robin };
 
-std::string to_string(Type type) {
+inline std::string to_string(Type type) {
     switch (type) {
         case Type::Dirichlet: return "Dirichlet";
         case Type::Neumann: return "Neumann";

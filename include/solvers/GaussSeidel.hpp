@@ -1,6 +1,7 @@
 #ifndef GAUSS_SEIDEL_HPP
 #define GAUSS_SEIDEL_HPP
 
+#include "utils/SolverLog.hpp"
 template<typename Matrix, typename Vector>
 struct GaussSeidel
 {

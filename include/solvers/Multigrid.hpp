@@ -1,6 +1,7 @@
 #ifndef MULTIGRID_HPP
 #define MULTIGRID_HPP
 
+#include "utils/SolverLog.hpp"
 template<typename Matrix, typename Vector>
 struct Multigrid
 {

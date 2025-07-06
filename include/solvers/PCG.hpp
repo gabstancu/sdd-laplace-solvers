@@ -2,17 +2,23 @@
 #define PCG_HPP
 
 #include "basis/Preconditioners.hpp"
-
+#include "utils/SolverLog.hpp"
 template<typename Matrix, typename Vector, typename Precondition>
 struct PCG
 {
     double tol = DEFAULT_TOL;
     int max_iters = MAX_ITERS;
     Precondition precon;
+    SolverLog log;
+    
 
-    PCG (const Precondition& p) : precon(p) {};
+    PCG (const Precondition& p) : precon(p) 
+    {
+        log.tolerance = tol;
+        log.max_iterations = max_iters;
+    };
 
-    void solve(LinearSystem<Matrix, Vector>& system) const
+    void solve (LinearSystem<Matrix, Vector>& system)
     {
         auto& A = system.A;
         auto& b = system.b;
@@ -35,6 +41,8 @@ struct PCG
             double alpha = r.dot(zeta) / d.dot(Ad);
             u = u + alpha * d;
             r = r - alpha * Ad;
+
+            log.num_of_iterations++;
 
             if (r.norm() / b_norm < tol) return;
 

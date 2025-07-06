@@ -8,16 +8,20 @@
 #include "Laplace2D.hpp"
 
 
+#define START_GRID_DIMENSION 12
+#define MAX_GRID_DIMENSION 100
+#define STEP_SIZE 8
+
 std::string get_home_directory () 
 {
     const char* home = std::getenv("HOME");
     return home ? std::string(home) : "";
 }
-
+ 
 
 int main ()
 {   
-    int GRID_SIZE = 20;
+    int GRID_SIZE = 40;
 
     std::vector<GiNaC::symbol> variables;
     GiNaC::symbol x_("x"), y_("y"); 
@@ -26,7 +30,7 @@ int main ()
     GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_);
     GiNaC::ex bottom = GiNaC::pow(x_, 2) + GiNaC::pow(y_, 2);
     double left  = 4;
-    double right = 2;
+    double right = 5;
 
     Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(GRID_SIZE, variables);
     laplace.bc.top.expr = top;
@@ -44,6 +48,7 @@ int main ()
 
     std::cout << system.u << '\n';
     std::cout << laplace.grid << '\n';
+    std::cout << solver.log.num_of_iterations << '\n';
 
     // for (int dim = 8; dim <= 96; dim+=8)
     // {
