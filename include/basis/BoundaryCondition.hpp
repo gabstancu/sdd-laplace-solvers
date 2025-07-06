@@ -1,5 +1,5 @@
-#ifndef BOUNDARY_CONDITIONS_HPP
-#define BOUNDARY_CONDITIONS_HPP
+#ifndef BOUNDARY_CONDITION_HPP
+#define BOUNDARY_CONDITION_HPP
 
 #include <ginac/ginac.h>
 #include <optional>
@@ -7,7 +7,28 @@
 #include <iostream>
 
 enum class Side { Top, Bottom, Left, Right };
+
+std::string to_string(Side side) {
+    switch (side) {
+        case Side::Top: return "Top";
+        case Side::Bottom: return "Bottom";
+        case Side::Left: return "Left";
+        case Side::Right: return "Right";
+        default: return "Unknown side.";
+    }
+}
+
 enum class Type { Dirichlet, Neumann, Robin };
+
+std::string to_string(Type type) {
+    switch (type) {
+        case Type::Dirichlet: return "Dirichlet";
+        case Type::Neumann: return "Neumann";
+        case Type::Robin: return "Robin";
+        default: return "Unknown type of boundary condition.";
+    }
+}
+
 
 using BoundaryType = std::variant<GiNaC::ex, double>;
 
@@ -58,17 +79,35 @@ struct BoundaryCondition
         }
         return val;
     }
-};
 
+    void print ()
+    {
+        if (!is_set())
+        {
+            std::cout << "Side " << to_string(side) << " was not initialised\n.";
+            return;
+        }
+        else
+        {
+            std::cout << "Side: " << to_string(side) << '\n';
+            if (is_constant())
+            {
+                std::cout << "Value: " << std::get<double>(*expr) << '\n';
+            }
+            else if (is_expression())
+            {
+                std::cout << "Expression: " << std::get<GiNaC::ex>(*expr) << '\n';
+            }
+        }
+    }
+};
 
 struct BoundaryConditions
 {
-    BoundaryCondition top{std::nullopt, Side::Top}, 
-                      bottom{std::nullopt, Side::Bottom}, 
-                      left{std::nullopt, Side::Left}, 
-                      right{std::nullopt, Side::Right} ;
-
+    BoundaryCondition top    {std::nullopt, Side::Top,    Type::Dirichlet};
+    BoundaryCondition bottom {std::nullopt, Side::Bottom, Type::Dirichlet};
+    BoundaryCondition left   {std::nullopt, Side::Left,   Type::Dirichlet}; 
+    BoundaryCondition right  {std::nullopt, Side::Right,  Type::Dirichlet};
 };
 
-
-#endif // BOUNDARY_CONDITIONS_HPP
+#endif // BOUNDARY_CONDITION_HPP

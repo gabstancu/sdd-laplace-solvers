@@ -13,6 +13,11 @@ struct LinearSystem
     {
         solver.solve(*this);
     }
+
+    void print ()
+    {
+        
+    }
 };
 
 
