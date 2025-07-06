@@ -29,9 +29,6 @@ struct ConjugateGradient
 
         if (r_norm / b_norm < tol) 
         {   
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            log.time_elapsed = elapsed;
             log.converged = 1;
             return;
         }
@@ -52,24 +49,17 @@ struct ConjugateGradient
             r_norm = r.norm();
             
             log.num_of_iterations++;
-            log.res_per_iteration.push_back(r.norm() / b_norm);
+            log.res_per_iteration.push_back(r_norm / b_norm);
 
             if (r_norm / b_norm < tol) 
             {   
                 log.converged = 1;
-                auto end = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> elapsed = end - start;
-                log.time_elapsed = elapsed;
                 return;
             }
 
             double beta = r.dot(r) / r_prev_dot;
-
             d = r + beta * d; // update direction
         }
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = end - start;
-        log.time_elapsed = elapsed;
         return;
     }
 };

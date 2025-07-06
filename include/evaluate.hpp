@@ -35,8 +35,8 @@ void evaluate (System& system, Solver& solver, int grid_dim)
 
     std::cout << log_path+filename << '\n';
     system.solve(solver);
-    // std::cout << system.u << '\n';
     solver.log.log_to_file(log_path+filename, solver.name);
+    solver.log.print();
 }
 
 #endif // EVALUATE_HPP

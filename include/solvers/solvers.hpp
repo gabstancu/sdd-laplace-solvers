@@ -4,8 +4,8 @@
 #include <Eigen/Eigen>
 #include "basis/LinearSystem.hpp"
 
-#define DEFAULT_TOL 1e-5
-#define MAX_ITERS 500 
+#define DEFAULT_TOL 1e-4
+#define MAX_ITERS 1500 
 
 #include "solvers/ConjugateGradient.hpp"
 #include "solvers/PCG.hpp"

@@ -6,6 +6,7 @@
 #include "solvers/solvers.hpp"
 #include "Laplace2D.hpp"
 #include "evaluate.hpp"
+#include <iostream>
  
 
 int main ()
@@ -22,43 +23,38 @@ int main ()
     double left  = 4;
     double right = 5;
 
-    Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(GRID_SIZE, variables);
-    laplace.bc.top.expr = top;
-    laplace.bc.bottom.expr = bottom;
-    laplace.bc.left.expr = left;
-    laplace.bc.right.expr = right;
-    laplace.initialise_grid();
-    std::cout << laplace.grid << "\n\n";
+    for (int dim = 30; dim <= 30; dim+=8)
+    {
+        Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(dim, variables);
+        laplace.bc.top.expr = top;
+        laplace.bc.bottom.expr = bottom;
+        laplace.bc.left.expr = left;
+        laplace.bc.right.expr = right;
+        laplace.initialise_grid();
 
-    LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
+        LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
 
-    DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(system.A);
-    PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
-    system.solve(solver);
-    solver.log.log_to_file(get_current_working_directory()+"/test.txt", solver.name);
-    laplace.fill_grid(system.u);
+        // DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(system.A);
+        SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(system.A, 1.2);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> PCG(precon);
+        evaluate(system, PCG, dim);
+        
+        system = laplace.construct_system();
+        ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
+        evaluate(system, CG, dim);
 
-    // // std::cout << system.u << '\n';
-    // std::cout << laplace.grid << '\n';
-    // std::cout << solver.log.num_of_iterations << '\n';
+        // system = laplace.construct_system();
+        // GaussSeidel<Eigen::MatrixXd, Eigen::VectorXd> GS;
+        // evaluate(system, GS, dim);
 
-    // for (int dim = 5; dim <= 20; dim+=5)
-    // {
-    //     Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(dim, variables);
-    //     laplace.bc.top.expr = top;
-    //     laplace.bc.bottom.expr = bottom;
-    //     laplace.bc.left.expr = left;
-    //     laplace.bc.right.expr = right;
-    //     laplace.initialise_grid();
+        // system = laplace.construct_system();
+        // Jacobi<Eigen::MatrixXd, Eigen::VectorXd> Jacobi;
+        // evaluate(system, Jacobi, dim);
 
-    //     LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
-
-    //     DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(system.A);
-    //     PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
-    //     evaluate(system, solver, dim);
-
-
-    // }
+        // // system = laplace.construct_system();
+        // SOR<Eigen::MatrixXd, Eigen::VectorXd> SOR(1.2);
+        // evaluate(system, SOR, dim);
+    }
 
 
     /* ---------------------- test solvers ---------------------- */

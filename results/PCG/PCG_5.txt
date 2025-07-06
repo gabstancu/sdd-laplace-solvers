@@ -1,5 +1,0 @@
-C Solver: PCG
-C Iterations performed: 5
-C Time elapsed: 9.8583e-05
-C Converged: 1
-C Residual per iteration: 0.593584 0.319253 0.031982 0.00936579 2.47908e-17 

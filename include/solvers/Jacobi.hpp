@@ -18,7 +18,6 @@ struct Jacobi
 
     void solve(LinearSystem<Matrix, Vector>& system)
     {   
-        auto start = std::chrono::high_resolution_clock::now();
         auto& A = system.A;
         auto& b = system.b;
         auto& u = system.u;
@@ -30,9 +29,6 @@ struct Jacobi
 
         if (res < tol) 
         {   
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            log.time_elapsed = elapsed;
             log.converged = 1;
             return;
         }
@@ -60,18 +56,12 @@ struct Jacobi
             
             if (res < tol) 
             {   
-                auto end = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> elapsed = end - start;
-                log.time_elapsed = elapsed;
                 log.converged = 1;
                 return;
             }
 
             u = u_next; // now previous
         }
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = end - start;
-        log.time_elapsed = elapsed;
         return;
     }
 };

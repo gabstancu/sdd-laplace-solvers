@@ -19,7 +19,6 @@ struct SOR
 
     void solve(LinearSystem<Matrix, Vector>& system)
     {   
-        auto start = std::chrono::high_resolution_clock::now();
         auto& A = system.A;
         auto& b = system.b;
         auto& u = system.u;
@@ -30,11 +29,8 @@ struct SOR
 
         if (res < tol) 
         {   
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            log.time_elapsed = elapsed;
             log.converged = 1;
-            return u;
+            return;
         }
 
         // Matrix L = A.triangularView<Eigen::StrictlyLower>();
@@ -61,20 +57,16 @@ struct SOR
 
              /* ----------- matrix based ----------- */
              // u = K * (omega * b - (omega * U + (omega - 1) * D) * u);
+             
+            res = (A * u - b).norm() / b.norm();
             log.num_of_iterations++;
             log.res_per_iteration.push_back(res);
             if (res < tol) 
             {   
-                auto end = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> elapsed = end - start;
-                log.time_elapsed = elapsed;
                 log.converged = 1;
-                return u;
+                return;
             }
         }
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = end - start;
-        log.time_elapsed = elapsed;
         return;
     }
 };
