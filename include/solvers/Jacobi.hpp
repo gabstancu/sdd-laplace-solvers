@@ -7,9 +7,18 @@ struct Jacobi
 {
     double tol = DEFAULT_TOL;
     int max_iters = MAX_ITERS;
+    std::string name = "Jacobi";
+    SolverLog log;
 
-    void solve(LinearSystem<Matrix, Vector>& system) const
+    Jacobi ()
+    {
+        log.tolerance = tol;
+        log.max_iterations = max_iters;
+    }
+
+    void solve(LinearSystem<Matrix, Vector>& system)
     {   
+        auto start = std::chrono::high_resolution_clock::now();
         auto& A = system.A;
         auto& b = system.b;
         auto& u = system.u;
@@ -19,7 +28,14 @@ struct Jacobi
         b_norm = b.norm();
         res = (A* u - b).norm() / b_norm;
 
-        if (res < tol) return;
+        if (res < tol) 
+        {   
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            log.time_elapsed = elapsed;
+            log.converged = 1;
+            return;
+        }
 
         for (int k = 0; k < max_iters; k++)
         {
@@ -38,10 +54,24 @@ struct Jacobi
             // u = D_inv * (b - (L + U)*u);
 
             res = (A * u_next - b).norm() / b_norm;
-            if (res < tol) return;
+
+            log.num_of_iterations++;
+            log.res_per_iteration.push_back(res);
+            
+            if (res < tol) 
+            {   
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> elapsed = end - start;
+                log.time_elapsed = elapsed;
+                log.converged = 1;
+                return;
+            }
 
             u = u_next; // now previous
         }
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+        log.time_elapsed = elapsed;
         return;
     }
 };

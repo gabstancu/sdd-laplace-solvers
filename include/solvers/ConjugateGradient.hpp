@@ -7,9 +7,18 @@ struct ConjugateGradient
 {
     double tol = DEFAULT_TOL;
     int max_iters = MAX_ITERS;
+    std::string name = "CG";
+    SolverLog log;
 
-    void solve(LinearSystem<Matrix, Vector>& system) const
+    ConjugateGradient ()
     {
+        log.tolerance = tol;
+        log.max_iterations = max_iters;
+    }
+
+    void solve(LinearSystem<Matrix, Vector>& system)
+    {   
+        auto start = std::chrono::high_resolution_clock::now();
         auto& A = system.A;
         auto& b = system.b;
         auto& u = system.u;
@@ -18,7 +27,14 @@ struct ConjugateGradient
         double b_norm = b.norm();
         double r_norm = r.norm();
 
-        if (r_norm / b_norm < tol) return;
+        if (r_norm / b_norm < tol) 
+        {   
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            log.time_elapsed = elapsed;
+            log.converged = 1;
+            return;
+        }
 
         Vector d = r; // initial search direction
 
@@ -34,12 +50,26 @@ struct ConjugateGradient
             r = r - alpha * Ad;
 
             r_norm = r.norm();
-            if (r_norm / b_norm < tol) return;
+            
+            log.num_of_iterations++;
+            log.res_per_iteration.push_back(r.norm() / b_norm);
+
+            if (r_norm / b_norm < tol) 
+            {   
+                log.converged = 1;
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> elapsed = end - start;
+                log.time_elapsed = elapsed;
+                return;
+            }
 
             double beta = r.dot(r) / r_prev_dot;
 
             d = r + beta * d; // update direction
         }
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+        log.time_elapsed = elapsed;
         return;
     }
 };

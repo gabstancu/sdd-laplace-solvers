@@ -8,6 +8,7 @@ struct PCG
 {
     double tol = DEFAULT_TOL;
     int max_iters = MAX_ITERS;
+    std::string name = "PCG";
     Precondition precon;
     SolverLog log;
     
@@ -19,7 +20,8 @@ struct PCG
     };
 
     void solve (LinearSystem<Matrix, Vector>& system)
-    {
+    {   
+        auto start = std::chrono::high_resolution_clock::now();
         auto& A = system.A;
         auto& b = system.b;
         auto& u = system.u;
@@ -29,7 +31,14 @@ struct PCG
         Vector d = zeta;
 
         double b_norm = b.norm();
-        if (r.norm() / b_norm < tol) return;
+        if (r.norm() / b_norm < tol) 
+        {   
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            log.time_elapsed = elapsed;
+            log.converged = 1;
+            return;
+        }
 
         for (int k = 0; k < max_iters; k++)
         {   
@@ -43,13 +52,24 @@ struct PCG
             r = r - alpha * Ad;
 
             log.num_of_iterations++;
+            log.res_per_iteration.push_back(r.norm() / b_norm);
 
-            if (r.norm() / b_norm < tol) return;
+            if (r.norm() / b_norm < tol) 
+            {   
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> elapsed = end - start;
+                log.time_elapsed = elapsed;
+                log.converged = 1;
+                return;
+            }
 
             zeta = precon.apply(r);
             double beta = r.dot(zeta) / r_prev.dot(zeta_prev);
             d = zeta + beta * d;
         }
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+        log.time_elapsed = elapsed;
         return;
     }
 };

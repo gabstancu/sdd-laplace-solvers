@@ -2,26 +2,16 @@
 #include <string>
 #include <ginac/ginac.h>
 #include <gnuplot-iostream.h>
-#include <cstdlib> // for std::getenv
 #include "basis/basis.hpp"
 #include "solvers/solvers.hpp"
 #include "Laplace2D.hpp"
-
-
-#define START_GRID_DIMENSION 12
-#define MAX_GRID_DIMENSION 100
-#define STEP_SIZE 8
-
-std::string get_home_directory () 
-{
-    const char* home = std::getenv("HOME");
-    return home ? std::string(home) : "";
-}
+#include "evaluate.hpp"
  
 
 int main ()
 {   
-    int GRID_SIZE = 40;
+    std::cout << get_current_working_directory() << '\n';
+    int GRID_SIZE = 20;
 
     std::vector<GiNaC::symbol> variables;
     GiNaC::symbol x_("x"), y_("y"); 
@@ -38,21 +28,36 @@ int main ()
     laplace.bc.left.expr = left;
     laplace.bc.right.expr = right;
     laplace.initialise_grid();
-    std::cout << laplace.grid << '\n';
+    std::cout << laplace.grid << "\n\n";
 
     LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
+
     DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(system.A);
     PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
     system.solve(solver);
+    solver.log.log_to_file(get_current_working_directory()+"/test.txt", solver.name);
     laplace.fill_grid(system.u);
 
-    std::cout << system.u << '\n';
-    std::cout << laplace.grid << '\n';
-    std::cout << solver.log.num_of_iterations << '\n';
+    // // std::cout << system.u << '\n';
+    // std::cout << laplace.grid << '\n';
+    // std::cout << solver.log.num_of_iterations << '\n';
 
-    // for (int dim = 8; dim <= 96; dim+=8)
+    // for (int dim = 5; dim <= 20; dim+=5)
     // {
-    //     std::cout << "dim: " << dim << '\n';
+    //     Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(dim, variables);
+    //     laplace.bc.top.expr = top;
+    //     laplace.bc.bottom.expr = bottom;
+    //     laplace.bc.left.expr = left;
+    //     laplace.bc.right.expr = right;
+    //     laplace.initialise_grid();
+
+    //     LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
+
+    //     DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(system.A);
+    //     PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
+    //     evaluate(system, solver, dim);
+
+
     // }
 
 
