@@ -67,8 +67,8 @@ struct Laplace2D
     LinearSystem<Matrix, Vector> construct_system ()
     {
         LinearSystem<Matrix, Vector> system;
-        int N = GRID_SIZE - 2; // inner grid dimension
-        int dim = int(std::pow(N, 2));
+        int N    = GRID_SIZE - 2; // inner grid dimension
+        int dim  = int(std::pow(N, 2));
 
         system.A = Eigen::MatrixXd::Zero(dim, dim);
         system.b = Eigen::VectorXd::Zero(dim);
@@ -127,13 +127,16 @@ struct Laplace2D
     void save_grid (std::string filename)
     {   
         int N = this->grid.rows();
-        std::ofstream file(filename);
+        std::filesystem::path full_path = std::filesystem::current_path() / "grids" / filename;
+        std::filesystem::create_directories(full_path.parent_path());
+
+        std::ofstream file(full_path);
 
         for (int i = 0; i < N; i++)
         {
             for (int j = 0; j < N; j++)
-            {
-                file << this->grid(i, j) << " ";   
+            { 
+                std::cout << this->grid(i, j) << " ";  
             }
             file << '\n';
         }
