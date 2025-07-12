@@ -39,8 +39,8 @@ void evaluate (System& system, Solver& solver, int grid_dim)
     std::string filename = solver.name + "_" + std::to_string(grid_dim) + ".txt";
 
     system.solve(solver);
-    solver.log.log_to_file(log_path+filename, solver.name);
     solver.log.print();
+    solver.log.log_to_file(log_path+filename, solver.name);
 }
 
 #endif // EVALUATE_HPP
