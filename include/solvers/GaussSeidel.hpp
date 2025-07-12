@@ -5,14 +5,15 @@
 template<typename Matrix, typename Vector>
 struct GaussSeidel
 {
-    double tol = DEFAULT_TOL;
-    int max_iters = MAX_ITERS;
-    std::string name = "Gauss-Seidel";
-    SolverLog log;
+    double      tol          = DEFAULT_TOL;
+    int         max_iters    = MAX_ITERS;
+    std::string name         = "Gauss-Seidel";
+    SolverLog<Eigen::VectorXd> log;
+    Vector      final_solution;
 
     GaussSeidel ()
     {
-        log.tolerance = tol;
+        log.tolerance      = tol;
         log.max_iterations = max_iters;
     }
 
@@ -22,14 +23,16 @@ struct GaussSeidel
         auto& b = system.b;
         auto& u = system.u;
 
-        double sum1, sum2;
+        double sum1,   sum2;
         double b_norm, r_norm, res;
 
         b_norm = b.norm();
-        res = (A * u - b).norm() / b_norm;
+        res    = (A * u - b).norm() / b_norm;
 
         if (res < tol) 
         {   
+            this->final_solution = u;
+            log.final_solution   = this->final_solution;
             log.converged = 1;
             return;
         }
@@ -62,9 +65,13 @@ struct GaussSeidel
             if (res < tol) 
             {   
                 log.converged = 1;
+                this->final_solution = u;
+                log.final_solution   = this->final_solution;
                 return;
             }
         }
+        this->final_solution = u;
+        log.final_solution   = this->final_solution;
         return;
     }
 };

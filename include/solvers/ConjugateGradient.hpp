@@ -5,30 +5,33 @@
 template<typename Matrix, typename Vector>
 struct ConjugateGradient
 {
-    double tol = DEFAULT_TOL;
-    int max_iters = MAX_ITERS;
-    std::string name = "CG";
-    SolverLog log;
+    double      tol       = DEFAULT_TOL;
+    int         max_iters = MAX_ITERS;
+    std::string name      = "CG";
+    SolverLog<Eigen::VectorXd>   log;
+    Vector      final_solution;
 
     ConjugateGradient ()
     {
-        log.tolerance = tol;
+        log.tolerance      = tol;
         log.max_iterations = max_iters;
     }
 
     void solve(LinearSystem<Matrix, Vector>& system)
     {   
         auto start = std::chrono::high_resolution_clock::now();
-        auto& A = system.A;
-        auto& b = system.b;
-        auto& u = system.u;
+        auto& A    = system.A;
+        auto& b    = system.b;
+        auto& u    = system.u;
 
-        Vector r = b - A * u; // initial residual
+        Vector r      = b - A * u; // initial residual
         double b_norm = b.norm();
         double r_norm = r.norm();
 
         if (r_norm / b_norm < tol) 
         {   
+            this->final_solution = u;
+            log.final_solution   = this->final_solution;
             log.converged = 1;
             return;
         }
@@ -40,7 +43,7 @@ struct ConjugateGradient
             // std::cout << "--------------------- iter. " << k+1 << " ---------------------\n";
             Vector Ad = A * d;
 
-            double alpha = ((r.transpose() * r) / (d.transpose() * Ad)).coeff(0); // step size
+            double alpha      = ((r.transpose() * r) / (d.transpose() * Ad)).coeff(0); // step size
             double r_prev_dot = (r.transpose() * r).coeff(0); // to calculate beta
 
             u = u + alpha * d;
@@ -54,12 +57,16 @@ struct ConjugateGradient
             if (r_norm / b_norm < tol) 
             {   
                 log.converged = 1;
+                this->final_solution = u;
+                log.final_solution   = this->final_solution;
                 return;
             }
 
             double beta = r.dot(r) / r_prev_dot;
-            d = r + beta * d; // update direction
+            d           = r + beta * d; // update direction
         }
+        this->final_solution = u;
+        log.final_solution   = this->final_solution;
         return;
     }
 };

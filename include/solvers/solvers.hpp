@@ -5,7 +5,7 @@
 #include "basis/LinearSystem.hpp"
 
 #define DEFAULT_TOL 1e-4
-#define MAX_ITERS 1500 
+#define MAX_ITERS   350 
 
 #include "solvers/ConjugateGradient.hpp"
 #include "solvers/PCG.hpp"

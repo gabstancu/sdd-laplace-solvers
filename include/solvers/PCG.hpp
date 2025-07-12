@@ -6,16 +6,17 @@
 template<typename Matrix, typename Vector, typename Precondition>
 struct PCG
 {
-    double tol = DEFAULT_TOL;
-    int max_iters = MAX_ITERS;
-    std::string name = "PCG";
+    double       tol       = DEFAULT_TOL;
+    int          max_iters = MAX_ITERS;
+    std::string  name      = "PCG";
     Precondition precon;
-    SolverLog log;
+    SolverLog<Eigen::VectorXd>   log;
+    Vector       final_solution;
     
 
     PCG (const Precondition& p) : precon(p) 
     {
-        log.tolerance = tol;
+        log.tolerance      = tol;
         log.max_iterations = max_iters;
     };
 
@@ -25,22 +26,24 @@ struct PCG
         auto& b = system.b;
         auto& u = system.u;
 
-        Vector r = b - A * u;
+        Vector r    = b - A * u;
         Vector zeta = precon.apply(r);
-        Vector d = zeta;
+        Vector d    = zeta;
 
         double b_norm = b.norm();
         if (r.norm() / b_norm < tol) 
         {   
             log.converged = 1;
+            this->final_solution = u;
+            log.final_solution   = this->final_solution;
             return;
         }
 
         for (int k = 0; k < max_iters; k++)
         {   
             // std::cout << "Iteration: " << k+1 << '\n';
-            Vector Ad = A * d;
-            Vector r_prev = r;
+            Vector Ad        = A * d;
+            Vector r_prev    = r;
             Vector zeta_prev = zeta;
 
             double alpha = r.dot(zeta) / d.dot(Ad);
@@ -53,13 +56,17 @@ struct PCG
             if (r.norm() / b_norm < tol) 
             {   
                 log.converged = 1;
+                this->final_solution = u;
+                log.final_solution   = this->final_solution;
                 return;
             }
 
-            zeta = precon.apply(r);
+            zeta        = precon.apply(r);
             double beta = r.dot(zeta) / r_prev.dot(zeta_prev);
-            d = zeta + beta * d;
+            d           = zeta + beta * d;
         }
+        this->final_solution = u;
+        log.final_solution   = this->final_solution;
         return;
     }
 };

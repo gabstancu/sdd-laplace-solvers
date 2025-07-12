@@ -5,14 +5,15 @@
 template<typename Matrix, typename Vector>
 struct Multigrid
 {
-    double tol = DEFAULT_TOL;
-    int max_iters = MAX_ITERS;
-    std::string name = "Multigrid";
-    SolverLog log;
+    double      tol       = DEFAULT_TOL;
+    int         max_iters = MAX_ITERS;
+    std::string name      = "Multigrid";
+    SolverLog<Eigen::VectorXd>   log;
+    Vector      final_solution;
 
     Multigrid ()
     {
-        log.tolerance = tol;
+        log.tolerance      = tol;
         log.max_iterations = max_iters;
     }
 
@@ -29,6 +30,7 @@ struct Multigrid
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end - start;
         }
+        // this->final_solution = u;
     }
 };
 

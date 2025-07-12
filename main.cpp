@@ -12,17 +12,23 @@
 int main ()
 {   
     std::vector<GiNaC::symbol> variables;
-    GiNaC::symbol x_("x"), y_("y"); 
-    variables.push_back(x_); variables.push_back(y_);
+    GiNaC::symbol              x_("x"), y_("y"); 
+
+    variables.push_back(x_); 
+    variables.push_back(y_);
+    std::pair<std::pair<double, double>, std::pair<double, double>> domain;
+    domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
 
     GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_);
     GiNaC::ex bottom = GiNaC::pow(x_, 2) + GiNaC::pow(y_, 2);
     double left      = 4;
     double right     = 5;
 
-    for (int dim = START_GRID_DIMENSION; dim <= START_GRID_DIMENSION; dim+=STEP_SIZE)
-    {
-        Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(dim, variables);
+    for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
+    {   
+
+        std::cout << "====================================== GRID DIMENSION " << dim << " ======================================\n";
+        Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(dim, variables, domain);
         laplace.bc.top.expr    = top;
         laplace.bc.bottom.expr = bottom;
         laplace.bc.left.expr   = left;
@@ -31,40 +37,47 @@ int main ()
 
         LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
 
+
         SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd>    precon(system.A, 1.2);
         PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> PCG(precon);
+        std::cout << "----------------------- " << PCG.name << " -----------------------\n";
         evaluate(system, PCG, dim);
         laplace.fill_grid(system.u);
-        std::string filename = PCG.name + "/grid_" + std::to_string(dim) + ".txt";
+        std::string filename = PCG.name + "/grid_" + std::to_string(dim) + ".dat";
         laplace.save_grid(filename);
+
         
         system = laplace.construct_system();
         ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
+        std::cout << "----------------------- " << CG.name << " -----------------------\n";
         evaluate(system, CG, dim);
         laplace.fill_grid(system.u);
-        std::string filename = CG.name + "/grid_" + std::to_string(dim) + ".txt";
+        filename = CG.name + "/grid_" + std::to_string(dim) + ".dat";
         laplace.save_grid(filename);
 
         system = laplace.construct_system();
         GaussSeidel<Eigen::MatrixXd, Eigen::VectorXd> GS;
+        std::cout << "----------------------- " << GS.name << " -----------------------\n";
         evaluate(system, GS, dim);
         laplace.fill_grid(system.u);
-        std::string filename = GS.name + "/grid_" + std::to_string(dim) + ".txt";
+        filename = GS.name + "/grid_" + std::to_string(dim) + ".dat";
         laplace.save_grid(filename);
 
         system = laplace.construct_system();
         Jacobi<Eigen::MatrixXd, Eigen::VectorXd> Jacobi;
+        std::cout << "----------------------- " << Jacobi.name << " -----------------------\n";
         evaluate(system, Jacobi, dim);
         laplace.fill_grid(system.u);
-        std::string filename = Jacobi.name + "/grid_" + std::to_string(dim) + ".txt";
+        filename = Jacobi.name + "/grid_" + std::to_string(dim) + ".dat";
         laplace.save_grid(filename);
 
         system = laplace.construct_system();
         // TODO: write code to calculate optimal omega_
-        SOR<Eigen::MatrixXd, Eigen::VectorXd> SOR(1.2);
+        SOR<Eigen::MatrixXd, Eigen::VectorXd> SOR(1.3);
+        std::cout << "----------------------- " << SOR.name << " -----------------------\n";
         evaluate(system, SOR, dim);
         laplace.fill_grid(system.u);
-        std::string filename = SOR.name + "/grid_" + std::to_string(dim) + ".txt";
+        filename = SOR.name + "/grid_" + std::to_string(dim) + ".dat";
         laplace.save_grid(filename);
     }
 

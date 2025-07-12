@@ -9,7 +9,7 @@ struct LinearSystem
     Matrix A;
     Vector b;
     Vector u; // solution vector (initial guess)
-    int N = A.rows();
+    int    N = A.rows();
 
     template<typename Solver>
     void solve(Solver& solver)

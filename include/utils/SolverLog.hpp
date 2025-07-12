@@ -5,15 +5,17 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
-
+template<typename Vector>
 struct SolverLog
 {   
-    int num_of_iterations = 0;
-    int max_iterations = 0;
+    int    num_of_iterations = 0;
+    int    max_iterations    = 0;
     double tolerance;
-    std::vector<double> res_per_iteration;
-    int converged = 0;
+    int    converged         = 0;
+
+    std::vector<double>           res_per_iteration;
     std::chrono::duration<double> time_elapsed{0};
+    Vector                        final_solution;
 
     void print(std::string solver_name = "")
     {
@@ -39,6 +41,13 @@ struct SolverLog
             file << res << " ";
         }
         file << '\n';
+        file << "C Final solution: ";
+        for (double u_ : final_solution)
+        {
+            file << u_ << " ";
+        }
+        file << '\n';
+        std::cout << "Logs saved to: " << filename << '\n';
     }
 };
 

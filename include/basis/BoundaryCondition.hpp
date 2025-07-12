@@ -10,11 +10,11 @@ enum class Side { Top, Bottom, Left, Right };
 
 inline std::string to_string(Side side) {
     switch (side) {
-        case Side::Top: return "Top";
+        case Side::Top:    return "Top";
         case Side::Bottom: return "Bottom";
-        case Side::Left: return "Left";
-        case Side::Right: return "Right";
-        default: return "Unknown side.";
+        case Side::Left:   return "Left";
+        case Side::Right:  return "Right";
+        default:           return "Unknown side.";
     }
 }
 
@@ -23,9 +23,9 @@ enum class Type { Dirichlet, Neumann, Robin };
 inline std::string to_string(Type type) {
     switch (type) {
         case Type::Dirichlet: return "Dirichlet";
-        case Type::Neumann: return "Neumann";
-        case Type::Robin: return "Robin";
-        default: return "Unknown type of boundary condition.";
+        case Type::Neumann:   return "Neumann";
+        case Type::Robin:     return "Robin";
+        default:              return "Unknown type of boundary condition.";
     }
 }
 

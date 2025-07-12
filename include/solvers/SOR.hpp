@@ -5,16 +5,17 @@
 template<typename Matrix, typename Vector>
 struct SOR
 {
-    double tol = DEFAULT_TOL;
-    int max_iters = MAX_ITERS;
-    double omega;
-    std::string name = "SOR";
-    SolverLog log;
+    double      tol       = DEFAULT_TOL;
+    int         max_iters = MAX_ITERS;
+    double      omega;
+    std::string name      = "SOR";
+    SolverLog<Eigen::VectorXd>   log;
+    Vector      final_solution;
     
     SOR (double omega) : omega(omega)
     {
         log.max_iterations = max_iters;
-        log.tolerance = tol;
+        log.tolerance      = tol;
     }
 
     void solve(LinearSystem<Matrix, Vector>& system)
@@ -25,10 +26,12 @@ struct SOR
 
         double sum1, sum2;
         double b_norm = b.norm();
-        double res = (A * u - b).norm() / b_norm;
+        double res    = (A * u - b).norm() / b_norm;
 
         if (res < tol) 
         {   
+            this->final_solution = u;
+            log.final_solution   = this->final_solution;
             log.converged = 1;
             return;
         }
@@ -63,10 +66,14 @@ struct SOR
             log.res_per_iteration.push_back(res);
             if (res < tol) 
             {   
+                this->final_solution = u;
+                log.final_solution   = this->final_solution;
                 log.converged = 1;
                 return;
             }
         }
+        this->final_solution = u;
+        log.final_solution   = this->final_solution;
         return;
     }
 };

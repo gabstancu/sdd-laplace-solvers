@@ -14,8 +14,15 @@ struct Laplace2D
     BoundaryConditions bc;
     std::vector<GiNaC::symbol> vars;
 
-    Laplace2D (int grid_size, std::vector<GiNaC::symbol> variables) :
-        GRID_SIZE(grid_size), vars(variables), h(1.0 / (grid_size - 1.0)) {}
+    Laplace2D (int grid_size, 
+               std::vector<GiNaC::symbol> variables, 
+               std::pair<std::pair<double, double>, std::pair<double, double>> domain) 
+        {
+            this->GRID_SIZE = grid_size;
+            this->vars      = variables;
+            this->domain    = domain;   
+            this->h         = 1.0 / (grid_size + 1.0);
+        }
 
 
     void initialise_grid ()
@@ -135,11 +142,12 @@ struct Laplace2D
         for (int i = 0; i < N; i++)
         {
             for (int j = 0; j < N; j++)
-            { 
-                std::cout << this->grid(i, j) << " ";  
+            {
+                file << this->grid(i, j) << " "; 
             }
             file << '\n';
         }
+        std::cout << "Grid saved to: " << full_path << '\n';
     }
 
     void print ()
