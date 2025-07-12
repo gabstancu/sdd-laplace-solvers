@@ -24,10 +24,10 @@ int main ()
     double left      = 4;
     double right     = 5;
 
-    for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
+    for (int dim = START_GRID_DIMENSION; dim <= START_GRID_DIMENSION; dim+=STEP_SIZE)
     {   
 
-        std::cout << "====================================== GRID DIMENSION " << dim << " ======================================\n";
+        std::cout << "=================================================== GRID DIMENSION " << dim << " ===================================================\n";
         Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(dim, variables, domain);
         laplace.bc.top.expr    = top;
         laplace.bc.bottom.expr = bottom;
@@ -72,13 +72,16 @@ int main ()
         laplace.save_grid(filename);
 
         system = laplace.construct_system();
-        // TODO: write code to calculate optimal omega_
-        SOR<Eigen::MatrixXd, Eigen::VectorXd> SOR(1.3);
+        double omega_ = system.calc_omega_();
+        std::cout << omega_ << '\n';
+        SOR<Eigen::MatrixXd, Eigen::VectorXd> SOR(omega_);
         std::cout << "----------------------- " << SOR.name << " -----------------------\n";
         evaluate(system, SOR, dim);
         laplace.fill_grid(system.u);
         filename = SOR.name + "/grid_" + std::to_string(dim) + ".dat";
         laplace.save_grid(filename);
+
+        system.solve_directly();
     }
 
 

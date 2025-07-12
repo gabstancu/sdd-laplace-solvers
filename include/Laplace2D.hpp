@@ -80,8 +80,9 @@ struct Laplace2D
         system.A = Eigen::MatrixXd::Zero(dim, dim);
         system.b = Eigen::VectorXd::Zero(dim);
         system.u = Eigen::VectorXd::Zero(dim);
+        system.N = N;
 
-        /* -4 u_{i, j} + u_{i+1, j} + u_{i-1, j} + u_{i, j+1} + u_{i, j-1} = b_{k} */
+        /* ( -4 u_{i, j} + u_{i+1, j} + u_{i-1, j} + u_{i, j+1} + u_{i, j-1} ) / h^2 = 0 */
         int k;
         for (int i = 1; i <= N; i++)
         {
@@ -89,27 +90,27 @@ struct Laplace2D
             {
                 k = (i - 1) * N + (j - 1);
 
-                system.A(k, k) = -4;
+                system.A(k, k) = -4.0 / std::pow(h, 2);
 
                 if (i == N) // bottom neighbor
-                    system.b(k) -= grid(i + 1, j);
+                    system.b(k) -= grid(i + 1, j) / std::pow(h, 2);
                 else
                     system.A(k, k + N) = 1.0;
 
                 if (i == 1) // top neighbor
-                    system.b(k) -= grid(i - 1, j);
+                    system.b(k) -= grid(i - 1, j) / std::pow(h, 2);
                 else
                     system.A(k, k - N) = 1.0;
 
 
                 if (j == N) // right neighbor
-                    system.b(k) -= grid(i, j + 1);
+                    system.b(k) -= grid(i, j + 1) / std::pow(h, 2);
                 else
                     system.A(k, k + 1) = 1.0;
 
 
                 if (j == 1) // left neighbor
-                    system.b(k) -= grid(i, j - 1);
+                    system.b(k) -= grid(i, j - 1) / std::pow(h, 2);
                 else
                     system.A(k, k - 1) = 1.0;
             }

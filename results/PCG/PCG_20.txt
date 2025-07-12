@@ -1,6 +1,0 @@
-C Solver: PCG
-C Iterations performed: 12
-C Time elapsed: 0.0114045
-C Converged: 1
-C Residual per iteration: 0.284112 0.158497 0.108458 0.0932289 0.0508288 0.0112548 0.00467048 0.00219285 0.0011564 0.000404022 0.000216855 8.63674e-05 
-C Final solution: 

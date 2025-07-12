@@ -4,29 +4,17 @@
 #include <cstdlib> // for std::getenv
 #include <filesystem>
 #include <chrono>
-#include <chrono>
+#include "utils/helper.hpp"
 
-#define START_GRID_DIMENSION 12
-#define MAX_GRID_DIMENSION 100
-#define STEP_SIZE 8
-
-inline std::string get_home_directory () 
-{
-    const char* home = std::getenv("HOME");
-    return home ? std::string(home) : "";
-}
-
-
-inline std::string get_current_working_directory() 
-{
-    return std::filesystem::current_path().string();
-}
+#define START_GRID_DIMENSION 10
+#define MAX_GRID_DIMENSION   100
+#define STEP_SIZE            10
 
 
 template<typename System, typename Solver>
 void evaluate (System& system, Solver& solver, int grid_dim)
 {
-    std::string log_path = get_current_working_directory() + "/results/" + solver.name +"/";
+    std::string log_path = get_current_working_directory() + "/logs/" + solver.name +"/";
 
     if (std::filesystem::create_directories(log_path)) 
     {
