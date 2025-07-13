@@ -13,7 +13,7 @@ struct SolverLog
     double tolerance;
     int    converged         = 0;
 
-    std::vector<double>           res_per_iteration;
+    std::vector<double>           res_per_iteration = {};
     std::chrono::duration<double> time_elapsed{0};
     Vector                        final_solution;
 
@@ -32,17 +32,17 @@ struct SolverLog
 
         if (!solver_name.empty())
             file << "C Solver: " << solver_name << '\n';
-        file << "C Iterations performed: " << num_of_iterations << '\n';
-        file << "C Time elapsed: " << time_elapsed.count() << '\n';
-        file << "C Converged: " << converged << '\n';
+        file << "C Iterations performed: " << this->num_of_iterations << '\n';
+        file << "C Time elapsed: " << this->time_elapsed.count() << '\n';
+        file << "C Converged: " << this->converged << '\n';
         file << "C Residual per iteration: ";
-        for (double res : res_per_iteration)
+        for (double res : this->res_per_iteration)
         {
             file << res << " ";
         }
         file << '\n';
         file << "C Final solution: ";
-        for (double u_ : final_solution)
+        for (double u_ : this->final_solution)
         {
             file << u_ << " ";
         }

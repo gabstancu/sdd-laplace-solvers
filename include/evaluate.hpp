@@ -6,9 +6,9 @@
 #include <chrono>
 #include "utils/helper.hpp"
 
-#define START_GRID_DIMENSION 10
+#define START_GRID_DIMENSION 12
 #define MAX_GRID_DIMENSION   100
-#define STEP_SIZE            10
+#define STEP_SIZE            8
 
 
 template<typename System, typename Solver>

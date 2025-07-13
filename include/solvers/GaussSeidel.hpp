@@ -58,7 +58,6 @@ struct GaussSeidel
             // u = L_inv * (b - U * u);
 
             res = (A * u - b).norm() / b_norm;
-
             log.num_of_iterations++;
             log.res_per_iteration.push_back(res);
 
