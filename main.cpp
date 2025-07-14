@@ -4,8 +4,12 @@
 #include "basis/basis.hpp"
 #include "solvers/solvers.hpp"
 #include "Laplace2D.hpp"
-#include "evaluate.hpp"
+#include "utils/helper.hpp"
 #include <iostream>
+
+#define START_GRID_DIMENSION 12
+#define MAX_GRID_DIMENSION   100
+#define STEP_SIZE            8
  
 /* capstone project part */
 void evaluate_loop ()
@@ -23,7 +27,7 @@ void evaluate_loop ()
     double left      = 4;
     double right     = 5;
 
-    for (int dim = START_GRID_DIMENSION; dim <= START_GRID_DIMENSION; dim+=STEP_SIZE)
+    for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
     {   
 
         std::cout << "===================================== GRID DIMENSION " << dim << " =====================================\n";
@@ -38,49 +42,91 @@ void evaluate_loop ()
         double omega_ = system.calc_omega_();
         std::cout << "omega_: " << omega_ << '\n';
 
-        SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd>    precon(system.A, omega_);
-        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> PCG(precon, "SSOR");
-        std::cout << "----------------------- " << PCG.name << " -----------------------\n";
-        evaluate(system, PCG, "eval_results", dim);
-        laplace.fill_grid(system.u);
-        std::string filename = PCG.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid(filename);
-        system.reset_solution();
 
         // system = laplace.construct_system();
         ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
         std::cout << "----------------------- " << CG.name << " -----------------------\n";
-        evaluate(system, CG, "eval_results", dim);
+
+        std::string log_path = get_current_working_directory() + "/eval_results/" + CG.name +"/";
+        std::filesystem::create_directories(log_path);
+        std::string filename = CG.name + "_" + std::to_string(dim) + ".txt";
+
+        system.solve(CG);
+        CG.log.print();
+        CG.log.log_to_file(log_path+filename);
+
         laplace.fill_grid(system.u);
-        filename = CG.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid(filename);
+        std::string gridfile = CG.name + "/grid_" + std::to_string(dim) + ".dat";
+        laplace.save_grid("grids", gridfile);
+        system.reset_solution();
+
+
+        SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd>    precon(system.A, omega_);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> PCG(precon, "SSOR");
+        std::cout << "----------------------- " << PCG.name << " -----------------------\n";
+
+        log_path = get_current_working_directory() + "/eval_results/" + PCG.name +"/";
+        std::filesystem::create_directories(log_path);
+        filename = PCG.name + "_" + std::to_string(dim) + ".txt";
+
+        system.solve(PCG);
+        PCG.log.print();
+        PCG.log.log_to_file(log_path+filename);
+
+        laplace.fill_grid(system.u);
+        gridfile = PCG.name + "/grid_" + std::to_string(dim) + ".dat";
+        laplace.save_grid("grids", gridfile);
         system.reset_solution();
 
         // system = laplace.construct_system();
         GaussSeidel<Eigen::MatrixXd, Eigen::VectorXd> GS;
         std::cout << "----------------------- " << GS.name << " -----------------------\n";
-        evaluate(system, GS, "eval_results", dim);
+
+        log_path = get_current_working_directory() + "/eval_results/" + GS.name +"/";
+        std::filesystem::create_directories(log_path);
+        filename = GS.name + "_" + std::to_string(dim) + ".txt";
+
+        system.solve(GS);
+        GS.log.print();
+        GS.log.log_to_file(log_path+filename);
+
         laplace.fill_grid(system.u);
-        filename = GS.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid(filename);
+        gridfile = GS.name + "/grid_" + std::to_string(dim) + ".dat";
+        laplace.save_grid("grids", gridfile);
         system.reset_solution();
 
         // system = laplace.construct_system();
         Jacobi<Eigen::MatrixXd, Eigen::VectorXd> Jacobi;
         std::cout << "----------------------- " << Jacobi.name << " -----------------------\n";
-        evaluate(system, Jacobi, "eval_results", dim);
+
+        log_path = get_current_working_directory() + "/eval_results/" + Jacobi.name +"/";
+        std::filesystem::create_directories(log_path);
+        filename = Jacobi.name + "_" + std::to_string(dim) + ".txt";
+
+        system.solve(Jacobi);
+        Jacobi.log.print();
+        Jacobi.log.log_to_file(log_path+filename);
+
         laplace.fill_grid(system.u);
-        filename = Jacobi.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid(filename);
+        gridfile = Jacobi.name + "/grid_" + std::to_string(dim) + ".dat";
+        laplace.save_grid("grids", gridfile);
         system.reset_solution();
 
         // system = laplace.construct_system();
         SOR<Eigen::MatrixXd, Eigen::VectorXd> SOR(omega_);
         std::cout << "----------------------- " << SOR.name << " -----------------------\n";
-        evaluate(system, SOR, "eval_results", dim);
+
+        log_path = get_current_working_directory() + "/eval_results/" + SOR.name +"/";
+        std::filesystem::create_directories(log_path);
+        filename = SOR.name + "_" + std::to_string(dim) + ".txt";
+
+        system.solve(SOR);
+        SOR.log.print();
+        SOR.log.log_to_file(log_path+filename);
+
         laplace.fill_grid(system.u);
-        filename = SOR.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid(filename);
+        gridfile = SOR.name + "/grid_" + std::to_string(dim) + ".dat";
+        laplace.save_grid("grids", gridfile);
         system.reset_solution();
 
         system.solve_directly();
@@ -97,14 +143,99 @@ void evaluate_preconditioners ()
     std::pair<std::pair<double, double>, std::pair<double, double>> domain;
     domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
 
-    GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_);
-    GiNaC::ex bottom = GiNaC::pow(x_, 2) + GiNaC::pow(y_, 2);
-    double left      = 4;
-    double right     = 5;
+    GiNaC::ex top       = GiNaC::sin(GiNaC::Pi * x_);
+    GiNaC::ex bottom    = GiNaC::pow(x_, 2) + GiNaC::pow(y_, 2);
+    double    left      = 4;
+    double    right     = 5;
 
-    for (int dim = START_GRID_DIMENSION; dim <=MAX_GRID_DIMENSION; dim += STEP_SIZE)
+
+
+    for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim += STEP_SIZE)
     {
+        std::cout << "===================================== GRID DIMENSION " << dim << " =====================================\n";
+        Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(dim, variables, domain);
+        laplace.bc.top.expr    = top;
+        laplace.bc.bottom.expr = bottom;
+        laplace.bc.left.expr   = left;
+        laplace.bc.right.expr  = right;
+        laplace.initialise_grid();
 
+        LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
+        double omega_ = system.calc_omega_();
+        std::cout << "omega_: " << omega_ << '\n';
+
+        std::cout << "------------- Identity -------------\n";
+        IdentityPreconditioner<Eigen::MatrixXd, Eigen::VectorXd>    precon_I;
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon_I)> PCG_I(precon_I, "Identity");
+
+        std::string log_path = get_current_working_directory() + "/eval_precon/" + PCG_I.precon_name +"/";
+        std::filesystem::create_directories(log_path);
+        std::string filename = PCG_I.name + "_" + std::to_string(dim) + ".txt";
+
+        system.solve(PCG_I);
+        PCG_I.log.print();
+        PCG_I.log.log_to_file(log_path+filename);
+
+        laplace.fill_grid(system.u);
+        std::string gridfile = PCG_I.name + "/grid_" + std::to_string(dim) + ".dat";
+        laplace.save_grid("precon_grids", gridfile);
+        system.reset_solution();
+
+
+        std::cout << "------------- Diagonal -------------\n";
+        DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd>    precon_D(system.A);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon_D)> PCG_D(precon_D, "Diagonal");
+
+        log_path = get_current_working_directory() + "/eval_precon/" + PCG_D.precon_name +"/";
+        std::filesystem::create_directories(log_path);
+        filename = PCG_D.name + "_" + std::to_string(dim) + ".txt";
+
+        system.solve(PCG_D);
+        PCG_D.log.print();
+        PCG_D.log.log_to_file(log_path+filename);
+
+        laplace.fill_grid(system.u);
+        gridfile = PCG_D.name + "/grid_" + std::to_string(dim) + ".dat";
+        laplace.save_grid("precon_grids", gridfile);
+        system.reset_solution();
+
+
+        std::cout << "------------- SSOR -------------\n";
+        SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd>    precon_SSOR(system.A, omega_);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon_SSOR)> PCG_SSOR(precon_SSOR, "SSOR");
+
+        log_path = get_current_working_directory() + "/eval_precon/" + PCG_SSOR.precon_name +"/";
+        std::filesystem::create_directories(log_path);
+        filename = PCG_SSOR.name + "_" + std::to_string(dim) + ".txt";
+
+        system.solve(PCG_SSOR);
+        PCG_SSOR.log.print();
+        PCG_SSOR.log.log_to_file(log_path+filename);
+
+        laplace.fill_grid(system.u);
+        gridfile = PCG_SSOR.name + "/grid_" + std::to_string(dim) + ".dat";
+        laplace.save_grid("precon_grids", gridfile);
+
+        system.reset_solution();
+
+        std::cout << "------------- Incomplete Cholesky -------------\n";
+        Eigen::SparseMatrix<double> A_sparse = system.A.sparseView();
+        auto precon_IC = IncompleteCholeskyPreconditioner<Eigen::SparseMatrix<double>, Eigen::VectorXd>(A_sparse);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon_IC)> PCG_IC(precon_IC, "IncompleteCholesky");
+
+        log_path = get_current_working_directory() + "/eval_precon/" + PCG_IC.precon_name +"/";
+        std::filesystem::create_directories(log_path);
+        filename = PCG_IC.name + "_" + std::to_string(dim) + ".txt";
+
+        system.solve(PCG_IC);
+        PCG_IC.log.print();
+        PCG_IC.log.log_to_file(log_path+filename);
+
+        laplace.fill_grid(system.u);
+        gridfile = PCG_IC.name + "/grid_" + std::to_string(dim) + ".dat";
+        laplace.save_grid("precon_grids", gridfile);
+
+        system.reset_solution();
     }
 }
 
@@ -112,7 +243,8 @@ void evaluate_preconditioners ()
 int main ()
 {   
     
-    evaluate_loop();
+    // evaluate_loop();
+    evaluate_preconditioners();
 
     // /* ------------------------- Usage example -------------------------*/
     // int N = 5;

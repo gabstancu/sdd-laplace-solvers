@@ -133,10 +133,10 @@ struct Laplace2D
         }
     }
 
-    void save_grid (std::string filename)
+    void save_grid (std::string folder, std::string filename)
     {   
         int N = this->grid.rows();
-        std::filesystem::path full_path = std::filesystem::current_path() / "grids" / filename;
+        std::filesystem::path full_path = std::filesystem::current_path() / folder / filename;
         std::filesystem::create_directories(full_path.parent_path());
 
         std::ofstream file(full_path);
