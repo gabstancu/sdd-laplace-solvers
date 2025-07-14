@@ -72,7 +72,8 @@ struct Laplace2D
     }
 
     LinearSystem<Matrix, Vector> construct_system ()
-    {
+    {   
+        std::cout << "Constructing system...\n";
         LinearSystem<Matrix, Vector> system;
         int N    = GRID_SIZE - 2; // inner grid dimension
         int dim  = int(std::pow(N, 2));

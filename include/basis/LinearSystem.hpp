@@ -32,6 +32,7 @@ struct LinearSystem
         // this->_u_ = A.llt().solve(this->b);
         this->_u_ = A.lu().solve(this->b);
         
+        #ifndef TESTING_MODE
         std::string log_path = get_current_working_directory() + "/logs/direct_solving/";
         std::filesystem::create_directories(log_path);
         std::string filename = log_path + std::to_string(this->N) + ".txt";
@@ -43,6 +44,7 @@ struct LinearSystem
         }
         file << '\n';
         std::cout << "Direct solution saved to " << filename << '\n';
+        #endif
     }
 
     double calc_omega_()
@@ -50,6 +52,11 @@ struct LinearSystem
         this->omega_ = 2.0 / (1 + std::sin((M_PI) / (this->N + 1)));
         this->omega_ = std::min(this->omega_, 1.9 + (0.05) / this->N);
         return this->omega_;
+    }
+
+    void reset_solution ()
+    {
+        this->u.setZero();
     }
 
     void print ()

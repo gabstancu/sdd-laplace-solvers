@@ -3,24 +3,25 @@
 
 #include "basis/Preconditioners.hpp"
 #include "utils/SolverLog.hpp"
+#include "solvers/config.h"
 template<typename Matrix, typename Vector, typename Precondition>
 struct PCG
 {
     double       tol       = DEFAULT_TOL;
     int          max_iters = MAX_ITERS;
     std::string  name      = "PCG";
-    Precondition precon;
+    Precondition& precon;
     SolverLog<Eigen::VectorXd>   log;
     Vector       final_solution;
     
-
-    PCG (const Precondition& p) : precon(p) 
+    PCG (Precondition& p) : precon(p) 
     {
         log.tolerance      = tol;
         log.max_iterations = max_iters;
     };
 
-    void solve (LinearSystem<Matrix, Vector>& system)
+    template<typename System>
+    void solve (System& system)
     {   
         auto& A = system.A;
         auto& b = system.b;

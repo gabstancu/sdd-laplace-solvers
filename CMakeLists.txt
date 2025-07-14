@@ -23,7 +23,7 @@ include_directories(
     $ENV{HOMEBREW_OPT_PATH}/eigen/include/eigen3
     $ENV{HOMEBREW_OPT_PATH}/boost/include
     $ENV{HOMEBREW_OPT_PATH}/ginac/include/ginac
-    $ENV{EXTERNAL_LIBS_PATH}/gnuplot/include
+    # $ENV{EXTERNAL_LIBS_PATH}/gnuplot/include # optional (currently not using)
 )
 
 message("current working directory ${CMAKE_CURRENT_SOURCE_DIR}")
@@ -36,7 +36,6 @@ link_directories(
 
 file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.cpp")
 
-
 add_executable(solve ${SRC_FILES} ${CMAKE_SOURCE_DIR}/main.cpp)
-
 target_link_libraries(solve PRIVATE ginac Boost::iostreams)
+

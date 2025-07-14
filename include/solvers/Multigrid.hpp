@@ -2,6 +2,7 @@
 #define MULTIGRID_HPP
 
 #include "utils/SolverLog.hpp"
+#include "solvers/config.h"
 template<typename Matrix, typename Vector>
 struct Multigrid
 {
@@ -17,7 +18,8 @@ struct Multigrid
         log.max_iterations = max_iters;
     }
 
-    void solve(LinearSystem<Matrix, Vector>& system)
+    template<typename System>
+    void solve(System& system)
     {
         
         for (int k = 0; k < max_iters; k++)

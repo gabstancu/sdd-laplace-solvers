@@ -2,6 +2,7 @@
 #define JACOBI_HPP
 
 #include "utils/SolverLog.hpp"
+#include "solvers/config.h"
 template<typename Matrix, typename Vector>
 struct Jacobi
 {
@@ -17,7 +18,8 @@ struct Jacobi
         log.max_iterations = max_iters;
     }
 
-    void solve(LinearSystem<Matrix, Vector>& system)
+    template<typename System>
+    void solve(System& system)
     {   
         auto& A = system.A;
         auto& b = system.b;

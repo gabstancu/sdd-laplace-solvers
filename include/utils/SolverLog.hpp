@@ -11,7 +11,7 @@ struct SolverLog
     int    num_of_iterations = 0;
     int    max_iterations    = 0;
     double tolerance;
-    int    converged         = 0;
+    int    converged         = 0;     
 
     std::vector<double>           res_per_iteration = {};
     std::chrono::duration<double> time_elapsed{0};
@@ -27,7 +27,7 @@ struct SolverLog
     }
     
     void log_to_file (std::string filename, std::string solver_name = "")
-    {
+    {   
         std::ofstream file(filename);
 
         if (!solver_name.empty())

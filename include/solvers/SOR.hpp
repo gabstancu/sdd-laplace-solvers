@@ -2,6 +2,7 @@
 #define SOR_HPP
 
 #include "utils/SolverLog.hpp"
+#include "solvers/config.h"
 template<typename Matrix, typename Vector>
 struct SOR
 {
@@ -18,7 +19,8 @@ struct SOR
         log.tolerance      = tol;
     }
 
-    void solve(LinearSystem<Matrix, Vector>& system)
+    template<typename System>
+    void solve(System& system)
     {   
         auto& A = system.A;
         auto& b = system.b;

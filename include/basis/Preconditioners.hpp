@@ -52,10 +52,18 @@ struct IncompleteCholeskyPreconditioner
 {
     Eigen::IncompleteCholesky<double> ichol;
 
-    IncompleteCholeskyPreconditioner(const Matrix& A) 
+    IncompleteCholeskyPreconditioner(Matrix& A) 
     {
         ichol.compute(A);
     }
+
+    // Explicitly delete copy constructor/assignment
+    IncompleteCholeskyPreconditioner(const IncompleteCholeskyPreconditioner&) = delete;
+    IncompleteCholeskyPreconditioner& operator=(const IncompleteCholeskyPreconditioner&) = delete;
+
+    // Default move constructor/assignment
+    IncompleteCholeskyPreconditioner(IncompleteCholeskyPreconditioner&&) = default;
+    IncompleteCholeskyPreconditioner& operator=(IncompleteCholeskyPreconditioner&&) = default;
 
     Vector apply(Vector r) 
     {

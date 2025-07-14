@@ -2,6 +2,7 @@
 #define CONJUGATE_GRADIENT_HPP
 
 #include "utils/SolverLog.hpp"
+#include "solvers/config.h"
 template<typename Matrix, typename Vector>
 struct ConjugateGradient
 {
@@ -17,7 +18,8 @@ struct ConjugateGradient
         log.max_iterations = max_iters;
     }
 
-    void solve(LinearSystem<Matrix, Vector>& system)
+    template<typename System>
+    void solve(System& system)
     {   
         auto start = std::chrono::high_resolution_clock::now();
         auto& A    = system.A;
@@ -32,7 +34,7 @@ struct ConjugateGradient
         {   
             this->final_solution = u;
             log.final_solution   = this->final_solution;
-            log.converged = 1;
+            log.converged        = 1;
             return;
         }
 
@@ -56,7 +58,7 @@ struct ConjugateGradient
 
             if (r_norm / b_norm < tol) 
             {   
-                log.converged = 1;
+                log.converged        = 1;
                 this->final_solution = u;
                 log.final_solution   = this->final_solution;
                 return;
