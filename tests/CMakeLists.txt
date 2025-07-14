@@ -4,10 +4,8 @@ project(solver_tests LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Optional: message to confirm config
 message(STATUS "Configuring standalone test suite.")
 
-# Include necessary paths manually
 include_directories(
     ${CMAKE_SOURCE_DIR}/../include
     $ENV{HOMEBREW_INCLUDE_PATH}

@@ -16,15 +16,17 @@ struct Jacobi
     {
         log.tolerance      = tol;
         log.max_iterations = max_iters;
+        log.solver_name    = name;
     }
 
     template<typename System>
     void solve(System& system)
     {   
-        auto& A = system.A;
-        auto& b = system.b;
-        auto& u = system.u;
-        Vector u_next = u;
+        auto& A        = system.A;
+        auto& b        = system.b;
+        auto& u        = system.u;
+        log.system_dim = system.A.rows();
+        Vector u_next  = u;
         double sum, b_norm, res;
 
         b_norm = b.norm();

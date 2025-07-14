@@ -16,15 +16,17 @@ struct ConjugateGradient
     {
         log.tolerance      = tol;
         log.max_iterations = max_iters;
+        log.solver_name    = name;
     }
 
     template<typename System>
     void solve(System& system)
     {   
-        auto start = std::chrono::high_resolution_clock::now();
-        auto& A    = system.A;
-        auto& b    = system.b;
-        auto& u    = system.u;
+        auto start     = std::chrono::high_resolution_clock::now();
+        auto& A        = system.A;
+        auto& b        = system.b;
+        auto& u        = system.u;
+        log.system_dim = system.A.rows();
 
         Vector r      = b - A * u; // initial residual
         double b_norm = b.norm();

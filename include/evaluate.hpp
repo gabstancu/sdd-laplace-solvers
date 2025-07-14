@@ -12,9 +12,9 @@
 
 
 template<typename System, typename Solver>
-void evaluate (System& system, Solver& solver, int grid_dim)
+void evaluate (System& system, Solver& solver, std::string folder, int GRID_SIZE)
 {
-    std::string log_path = get_current_working_directory() + "/logs/" + solver.name +"/";
+    std::string log_path = get_current_working_directory() + "/" + folder + "/" + solver.name +"/";
 
     if (std::filesystem::create_directories(log_path)) 
     {
@@ -24,11 +24,11 @@ void evaluate (System& system, Solver& solver, int grid_dim)
     {
         std::cout << "Directory already exists or failed to create.\n";
     }
-    std::string filename = solver.name + "_" + std::to_string(grid_dim) + ".txt";
+    std::string filename = solver.name + "_" + std::to_string(GRID_SIZE) + ".txt";
 
     system.solve(solver);
     solver.log.print();
-    solver.log.log_to_file(log_path+filename, solver.name);
+    solver.log.log_to_file(log_path+filename);
 }
 
 #endif // EVALUATE_HPP

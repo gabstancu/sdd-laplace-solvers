@@ -35,7 +35,7 @@ void test_PCG_direct (const std::string name)
     if (name == "Identity")
     {
         IdentityPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon;
-        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "Identity");
         system.solve(solver);
 
         system.solve_directly();
@@ -48,7 +48,7 @@ void test_PCG_direct (const std::string name)
     else if (name == "Diagonal")
     {
         DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(system.A);
-        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "Diagonal");
         system.solve(solver);
 
         system.solve_directly();
@@ -62,7 +62,7 @@ void test_PCG_direct (const std::string name)
     {
         double omega_ = system.calc_omega_();
         SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(system.A, omega_);
-        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "SSOR");
         system.solve(solver);
 
         system.solve_directly();
@@ -76,7 +76,7 @@ void test_PCG_direct (const std::string name)
     {
         Eigen::SparseMatrix<double> A_sparse = system.A.sparseView();
         auto precon = IncompleteCholeskyPreconditioner<SparseMatrix, Vector>(A_sparse);
-        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "IncompleteCholesky");
         system.solve(solver);
 
         system.solve_directly();
@@ -124,7 +124,7 @@ void test_PCG_Laplace2D (const std::string name)
     if (name == "Identity")
     {
         IdentityPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon;
-        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "Identity");
         system.solve(solver);
 
         system.solve_directly();
@@ -137,7 +137,7 @@ void test_PCG_Laplace2D (const std::string name)
     else if (name == "Diagonal")
     {
         DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(system.A);
-        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "Diagonal");
         system.solve(solver);
 
         system.solve_directly();
@@ -151,7 +151,7 @@ void test_PCG_Laplace2D (const std::string name)
     {
         double omega_ = system.calc_omega_();
         SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(system.A, omega_);
-        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "SSOR");
         system.solve(solver);
 
         system.solve_directly();
@@ -165,7 +165,7 @@ void test_PCG_Laplace2D (const std::string name)
     {   
         Eigen::SparseMatrix<double> A_sparse = system.A.sparseView();
         auto precon = IncompleteCholeskyPreconditioner<SparseMatrix, Vector>(A_sparse);
-        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "IncompleteCholesky");
         system.solve(solver);
 
         system.solve_directly();

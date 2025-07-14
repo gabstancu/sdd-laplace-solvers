@@ -17,14 +17,16 @@ struct SOR
     {
         log.max_iterations = max_iters;
         log.tolerance      = tol;
+        log.solver_name    = name;
     }
 
     template<typename System>
     void solve(System& system)
     {   
-        auto& A = system.A;
-        auto& b = system.b;
-        auto& u = system.u;
+        auto& A        = system.A;
+        auto& b        = system.b;
+        auto& u        = system.u;
+        log.system_dim = system.A.rows();
 
         double sum1, sum2;
         double b_norm = b.norm();

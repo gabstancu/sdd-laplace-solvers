@@ -7,29 +7,34 @@
 template<typename Matrix, typename Vector, typename Precondition>
 struct PCG
 {
-    double       tol       = DEFAULT_TOL;
-    int          max_iters = MAX_ITERS;
-    std::string  name      = "PCG";
+    double        tol        = DEFAULT_TOL;
+    int           max_iters  = MAX_ITERS;
+    std::string   name       = "PCG";
     Precondition& precon;
+    std::string   precon_name;
     SolverLog<Eigen::VectorXd>   log;
-    Vector       final_solution;
+    Vector        final_solution;
     
-    PCG (Precondition& p) : precon(p) 
+    PCG (Precondition& p, std::string precon_name) : precon(p) 
     {
         log.tolerance      = tol;
         log.max_iterations = max_iters;
+        this->precon_name  = precon_name;
+        log.solver_name    = name;
+        log.precon_name    = precon_name; 
     };
 
     template<typename System>
     void solve (System& system)
     {   
-        auto& A = system.A;
-        auto& b = system.b;
-        auto& u = system.u;
+        auto& A        = system.A;
+        auto& b        = system.b;
+        auto& u        = system.u;
+        log.system_dim = system.A.rows();
 
-        Vector r    = b - A * u;
-        Vector zeta = precon.apply(r);
-        Vector d    = zeta;
+        Vector r       = b - A * u;
+        Vector zeta    = precon.apply(r);
+        Vector d       = zeta;
 
         double b_norm = b.norm();
         if (r.norm() / b_norm < tol) 

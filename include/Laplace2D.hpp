@@ -7,7 +7,7 @@
 template<typename Matrix, typename Vector>
 struct Laplace2D
 {   
-    int GRID_SIZE;
+    int    GRID_SIZE;
     Matrix grid;
     double h;
     std::pair<std::pair<double, double>, std::pair<double, double>> domain;

@@ -23,7 +23,7 @@ void evaluate_loop ()
     double left      = 4;
     double right     = 5;
 
-    for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
+    for (int dim = START_GRID_DIMENSION; dim <= START_GRID_DIMENSION; dim+=STEP_SIZE)
     {   
 
         std::cout << "===================================== GRID DIMENSION " << dim << " =====================================\n";
@@ -38,21 +38,19 @@ void evaluate_loop ()
         double omega_ = system.calc_omega_();
         std::cout << "omega_: " << omega_ << '\n';
 
-
         SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd>    precon(system.A, omega_);
-        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> PCG(precon);
+        PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> PCG(precon, "SSOR");
         std::cout << "----------------------- " << PCG.name << " -----------------------\n";
-        evaluate(system, PCG, dim);
+        evaluate(system, PCG, "eval_results", dim);
         laplace.fill_grid(system.u);
         std::string filename = PCG.name + "/grid_" + std::to_string(dim) + ".dat";
         laplace.save_grid(filename);
         system.reset_solution();
 
-        
         // system = laplace.construct_system();
         ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
         std::cout << "----------------------- " << CG.name << " -----------------------\n";
-        evaluate(system, CG, dim);
+        evaluate(system, CG, "eval_results", dim);
         laplace.fill_grid(system.u);
         filename = CG.name + "/grid_" + std::to_string(dim) + ".dat";
         laplace.save_grid(filename);
@@ -61,7 +59,7 @@ void evaluate_loop ()
         // system = laplace.construct_system();
         GaussSeidel<Eigen::MatrixXd, Eigen::VectorXd> GS;
         std::cout << "----------------------- " << GS.name << " -----------------------\n";
-        evaluate(system, GS, dim);
+        evaluate(system, GS, "eval_results", dim);
         laplace.fill_grid(system.u);
         filename = GS.name + "/grid_" + std::to_string(dim) + ".dat";
         laplace.save_grid(filename);
@@ -70,7 +68,7 @@ void evaluate_loop ()
         // system = laplace.construct_system();
         Jacobi<Eigen::MatrixXd, Eigen::VectorXd> Jacobi;
         std::cout << "----------------------- " << Jacobi.name << " -----------------------\n";
-        evaluate(system, Jacobi, dim);
+        evaluate(system, Jacobi, "eval_results", dim);
         laplace.fill_grid(system.u);
         filename = Jacobi.name + "/grid_" + std::to_string(dim) + ".dat";
         laplace.save_grid(filename);
@@ -79,7 +77,7 @@ void evaluate_loop ()
         // system = laplace.construct_system();
         SOR<Eigen::MatrixXd, Eigen::VectorXd> SOR(omega_);
         std::cout << "----------------------- " << SOR.name << " -----------------------\n";
-        evaluate(system, SOR, dim);
+        evaluate(system, SOR, "eval_results", dim);
         laplace.fill_grid(system.u);
         filename = SOR.name + "/grid_" + std::to_string(dim) + ".dat";
         laplace.save_grid(filename);
@@ -89,43 +87,64 @@ void evaluate_loop ()
     }
 }
 
+void evaluate_preconditioners ()
+{
+    std::vector<GiNaC::symbol> variables;
+    GiNaC::symbol              x_("x"), y_("y"); 
+
+    variables.push_back(x_); 
+    variables.push_back(y_);
+    std::pair<std::pair<double, double>, std::pair<double, double>> domain;
+    domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
+
+    GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_);
+    GiNaC::ex bottom = GiNaC::pow(x_, 2) + GiNaC::pow(y_, 2);
+    double left      = 4;
+    double right     = 5;
+
+    for (int dim = START_GRID_DIMENSION; dim <=MAX_GRID_DIMENSION; dim += STEP_SIZE)
+    {
+
+    }
+}
+
 
 int main ()
 {   
     
-    // evaluate_loop();
+    evaluate_loop();
 
-    /* ------------------------- Usage example -------------------------*/
-    int N = 5;
+    // /* ------------------------- Usage example -------------------------*/
+    // int N = 5;
 
-    Eigen::MatrixXd A(N, N);
-    A <<  2, -1,  0,  0,  0,
-         -1,  2, -1,  0,  0, 
-          0, -1,  2, -1,  0, 
-          0,  0, -1,  2, -1, 
-          0,  0,  0, -1,  2;
+    // Eigen::MatrixXd A(N, N);
+    // A <<  2, -1,  0,  0,  0,
+    //      -1,  2, -1,  0,  0, 
+    //       0, -1,  2, -1,  0, 
+    //       0,  0, -1,  2, -1, 
+    //       0,  0,  0, -1,  2;
 
-    Eigen::VectorXd x_exact(N);
-    x_exact << 1, 2, 3, 4, 5;
+    // Eigen::VectorXd x_exact(N);
+    // x_exact << 1, 2, 3, 4, 5;
 
-    Eigen::VectorXd  b  = A * x_exact;
-    Eigen::VectorXd u_0 = Eigen::VectorXd::Zero(N); // initial guess
-    LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system{A, b, u_0};
+    // Eigen::VectorXd  b  = A * x_exact;
+    // Eigen::VectorXd u_0 = Eigen::VectorXd::Zero(N); // initial guess
+    // LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system{A, b, u_0};
 
-    DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(A);
-    PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon);
-    system.solve(solver);
-    std::cout << system.u << '\n';
+    // DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(A);
+    // PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "Diagonal");
+    // system.solve(solver);
+    // solver.log.log_to_file();
 
-    system.reset_solution();
+    // system.reset_solution();
 
-    ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
-    system.solve(CG);
-    std::cout << system.u << '\n';
+    // ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
+    // system.solve(CG);
+    // solver.log.log_to_file();
 
-    system.reset_solution();
+    // system.reset_solution();
 
-    system.solve_directly();
+    // system.solve_directly();
 
     return 0;
 }

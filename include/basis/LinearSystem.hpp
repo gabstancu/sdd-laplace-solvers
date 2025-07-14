@@ -31,13 +31,21 @@ struct LinearSystem
     {
         // this->_u_ = A.llt().solve(this->b);
         this->_u_ = A.lu().solve(this->b);
+
+        #ifdef TESTING_MODE
+        std::cout << "[TEST] Skipping file logging.\n";
+        #endif
         
         #ifndef TESTING_MODE
-        std::string log_path = get_current_working_directory() + "/logs/direct_solving/";
+        std::string log_path = get_current_working_directory() + "/logs/direct/";
         std::filesystem::create_directories(log_path);
-        std::string filename = log_path + std::to_string(this->N) + ".txt";
+        std::string filename = log_path + "inst_" +std::to_string(this->A.rows()) + ".txt";
+
         std::ofstream file(filename);
-        
+
+        file << "Variables: " << this->A.rows() << '\n';
+        file << "omega_: " << this->omega_ << '\n';
+        file << "Solution vector: ";
         for (double u : this->_u_)
         {
             file << u << " ";
