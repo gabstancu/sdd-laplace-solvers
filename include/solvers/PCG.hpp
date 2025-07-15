@@ -15,6 +15,10 @@ struct PCG
     SolverLog<Eigen::VectorXd>   log;
     Vector        final_solution;
     
+    /*               TODO 
+        initialise preconditioners inside the 
+        constructor depending on precon_name
+    */ 
     PCG (Precondition& p, std::string precon_name) : precon(p) 
     {
         log.tolerance      = tol;

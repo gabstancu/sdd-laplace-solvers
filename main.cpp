@@ -260,9 +260,9 @@ int main ()
 {   
     
     // evaluate_loop();
-    evaluate_preconditioners();
+    // evaluate_preconditioners();
 
-    // /* ------------------------- Usage example -------------------------*/
+    /* ------------------------- Usage example -------------------------*/
     // int N = 5;
 
     // Eigen::MatrixXd A(N, N);
@@ -272,6 +272,8 @@ int main ()
     //       0,  0, -1,  2, -1, 
     //       0,  0,  0, -1,  2;
 
+    // double omega_ = 1.60;
+
     // Eigen::VectorXd x_exact(N);
     // x_exact << 1, 2, 3, 4, 5;
 
@@ -279,9 +281,10 @@ int main ()
     // Eigen::VectorXd u_0 = Eigen::VectorXd::Zero(N); // initial guess
     // LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system{A, b, u_0};
 
-    // DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(A);
-    // PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "Diagonal");
+    // SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(A, omega_);
+    // PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "SSOR");
     // system.solve(solver);
+    // std::cout << system.u << "\n\n";
     // solver.log.log_to_file();
 
     // system.reset_solution();

@@ -32,20 +32,52 @@ template<typename Matrix, typename Vector>
 struct SSORPreconditioner 
 {
     Matrix M;
+
+    Matrix L, LT;
+    Eigen::DiagonalMatrix<typename Vector::Scalar, Eigen::Dynamic> Dinv;
     double omega;
+
+    // SSORPreconditioner(Matrix& A, double omega_) : omega(omega_) 
+    // {
+    //     Matrix Diag_A  = A.diagonal().asDiagonal();
+    //     Matrix Upper_A = A.template triangularView<Eigen::StrictlyUpper>();
+    //     Matrix Lower_A = A.template triangularView<Eigen::StrictlyLower>();
+    //     this->M        = (omega_ / (2 - omega_)) * ((1/omega_) * Diag_A + Lower_A) * Diag_A.inverse() * ((1/omega_) * Diag_A + Lower_A).transpose();
+    // }
+
+    // Vector apply(Vector r) 
+    // {
+    //     return M.inverse() * r;
+    // }
 
     SSORPreconditioner(Matrix& A, double omega_) : omega(omega_) 
     {
-        Eigen::MatrixXd D = A.diagonal().asDiagonal();
-        Matrix L = -(A.template triangularView<Eigen::StrictlyLower>().toDenseMatrix());
-        M = (D - omega * L).inverse() * D * (D - omega * L).transpose().inverse();
+        Eigen::VectorXd Dvec = A.diagonal();
+        Dinv = Dvec.cwiseInverse().asDiagonal();
+
+        Matrix D = Dvec.asDiagonal();
+        Matrix Lstrict = A.template triangularView<Eigen::StrictlyLower>();
+        L = ((1.0 / omega) * D + Lstrict).sparseView();
+
+        LT = L.transpose();
     }
 
     Vector apply(Vector r) 
     {
-        return M * r;
+        // Solve: L y = r   (forward substitution)
+        Vector y = L.template triangularView<Eigen::Lower>().solve(r);
+
+        // Scale: y = D^{-1} y
+        y = Dinv * y;
+
+        // Solve: LT z = y  (backward substitution)
+        Vector z = LT.template triangularView<Eigen::Upper>().solve(y);
+
+        // Return SSOR preconditioned vector
+        return (omega / (2.0 - omega)) * z;
     }
 };
+
 
 template<typename Matrix, typename Vector>
 struct IncompleteCholeskyPreconditioner 
