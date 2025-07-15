@@ -27,7 +27,7 @@ void evaluate_loop ()
     double left      = 4;
     double right     = 5;
 
-    for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
+    for (int dim = MAX_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
     {   
 
         std::cout << "===================================== GRID DIMENSION " << dim << " =====================================\n";
@@ -165,8 +165,12 @@ void evaluate_preconditioners ()
         std::cout << "omega_: " << omega_ << '\n';
 
         std::cout << "------------- Identity -------------\n";
+        auto start = std::chrono::high_resolution_clock::now();
         IdentityPreconditioner<Eigen::MatrixXd, Eigen::VectorXd>    precon_I;
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
         PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon_I)> PCG_I(precon_I, "Identity");
+        PCG_I.log.precon_init_time = elapsed;
 
         std::string log_path = get_current_working_directory() + "/capstone/eval_precon/" + PCG_I.precon_name +"/";
         std::filesystem::create_directories(log_path);
@@ -183,8 +187,12 @@ void evaluate_preconditioners ()
 
 
         std::cout << "------------- Diagonal -------------\n";
+        start = std::chrono::high_resolution_clock::now();
         DiagonalPreconditioner<Eigen::MatrixXd, Eigen::VectorXd>    precon_D(system.A);
+        end = std::chrono::high_resolution_clock::now();
+        elapsed = end - start;
         PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon_D)> PCG_D(precon_D, "Diagonal");
+        PCG_D.log.precon_init_time = elapsed;
 
         log_path = get_current_working_directory() + "/capstone/eval_precon/" + PCG_D.precon_name +"/";
         std::filesystem::create_directories(log_path);
@@ -201,8 +209,12 @@ void evaluate_preconditioners ()
 
 
         std::cout << "------------- SSOR -------------\n";
+        start = std::chrono::high_resolution_clock::now();
         SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd>    precon_SSOR(system.A, omega_);
+        end = std::chrono::high_resolution_clock::now();
+        elapsed = end - start;
         PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon_SSOR)> PCG_SSOR(precon_SSOR, "SSOR");
+        PCG_SSOR.log.precon_init_time = elapsed;
 
         log_path = get_current_working_directory() + "/capstone/eval_precon/" + PCG_SSOR.precon_name +"/";
         std::filesystem::create_directories(log_path);
@@ -220,8 +232,12 @@ void evaluate_preconditioners ()
 
         std::cout << "------------- Incomplete Cholesky -------------\n";
         Eigen::SparseMatrix<double> A_sparse = system.A.sparseView();
+        start = std::chrono::high_resolution_clock::now();
         auto precon_IC = IncompleteCholeskyPreconditioner<Eigen::SparseMatrix<double>, Eigen::VectorXd>(A_sparse);
+        end = std::chrono::high_resolution_clock::now();
+        elapsed = end - start;
         PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon_IC)> PCG_IC(precon_IC, "IncompleteCholesky");
+        PCG_IC.log.precon_init_time = elapsed;
 
         log_path = get_current_working_directory() + "/capstone/eval_precon/" + PCG_IC.precon_name +"/";
         std::filesystem::create_directories(log_path);
@@ -243,7 +259,7 @@ void evaluate_preconditioners ()
 int main ()
 {   
     
-    evaluate_loop();
+    // evaluate_loop();
     evaluate_preconditioners();
 
     // /* ------------------------- Usage example -------------------------*/

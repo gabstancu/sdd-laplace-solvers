@@ -17,6 +17,7 @@ struct SolverLog
 
     std::vector<double>           res_per_iteration = {};
     std::chrono::duration<double> time_elapsed{0};
+    std::chrono::duration<double> precon_init_time{0};
     Vector                        final_solution;
     Vector                        direct_solution;
 
@@ -87,7 +88,11 @@ struct SolverLog
         if (!solver_name.empty())
             file << "C Solver: " << solver_name << '\n';
         if (!precon_name.empty())
-            file << "Precon.: " << precon_name << '\n';
+        {
+            file << "C Precon.: " << precon_name << '\n';
+            if (precon_init_time.count())
+                file << "C Precon. init. time: " << precon_init_time.count() << '\n';
+        }
         file << "C Variables: " << system_dim << '\n';
         file << "C Iterations performed: " << this->num_of_iterations << '\n';
         file << "C Time elapsed: " << this->time_elapsed.count() << '\n';
