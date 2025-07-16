@@ -27,10 +27,13 @@ struct LinearSystem
         solver.log.time_elapsed = elapsed;
     }
 
-    void solve_directly ()
+    void solve_directly (bool log)
     {
         // this->_u_ = A.llt().solve(this->b);
         this->_u_ = A.lu().solve(this->b);
+
+        if (!log)
+            return;
 
         #ifdef TESTING_MODE
         std::cout << "[TEST] Skipping file logging.\n";

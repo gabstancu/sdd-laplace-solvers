@@ -27,7 +27,7 @@ void evaluate_loop ()
     double left      = 4;
     double right     = 5;
 
-    for (int dim = MAX_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
+    for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
     {   
 
         std::cout << "===================================== GRID DIMENSION " << dim << " =====================================\n";
@@ -129,7 +129,7 @@ void evaluate_loop ()
         laplace.save_grid("capstone/grids", gridfile);
         system.reset_solution();
 
-        system.solve_directly();
+        system.solve_directly(true);
     }
 }
 
@@ -263,39 +263,39 @@ int main ()
     // evaluate_preconditioners();
 
     /* ------------------------- Usage example -------------------------*/
-    // int N = 5;
+    int N = 5;
 
-    // Eigen::MatrixXd A(N, N);
-    // A <<  2, -1,  0,  0,  0,
-    //      -1,  2, -1,  0,  0, 
-    //       0, -1,  2, -1,  0, 
-    //       0,  0, -1,  2, -1, 
-    //       0,  0,  0, -1,  2;
+    Eigen::MatrixXd A(N, N);
+    A <<  2, -1,  0,  0,  0,
+         -1,  2, -1,  0,  0, 
+          0, -1,  2, -1,  0, 
+          0,  0, -1,  2, -1, 
+          0,  0,  0, -1,  2;
 
-    // double omega_ = 1.60;
+    double omega_ = 1.60;
 
-    // Eigen::VectorXd x_exact(N);
-    // x_exact << 1, 2, 3, 4, 5;
+    Eigen::VectorXd x_exact(N);
+    x_exact << 1, 2, 3, 4, 5;
 
-    // Eigen::VectorXd  b  = A * x_exact;
-    // Eigen::VectorXd u_0 = Eigen::VectorXd::Zero(N); // initial guess
-    // LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system{A, b, u_0};
+    Eigen::VectorXd  b  = A * x_exact;
+    Eigen::VectorXd u_0 = Eigen::VectorXd::Zero(N); // initial guess
+    LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system{A, b, u_0};
 
-    // SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(A, omega_);
-    // PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "SSOR");
-    // system.solve(solver);
-    // std::cout << system.u << "\n\n";
-    // solver.log.log_to_file();
+    SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(A, omega_);
+    PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "SSOR");
+    system.solve(solver);
+    std::cout << system.u << "\n\n";
+    solver.log.log_to_file();
 
-    // system.reset_solution();
+    system.reset_solution();
 
-    // ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
-    // system.solve(CG);
-    // solver.log.log_to_file();
+    ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
+    system.solve(CG);
+    solver.log.log_to_file();
 
-    // system.reset_solution();
+    system.reset_solution();
 
-    // system.solve_directly();
+    system.solve_directly(false);
 
     return 0;
 }
