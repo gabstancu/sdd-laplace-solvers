@@ -21,7 +21,7 @@ struct Laplace2D
             this->GRID_SIZE = grid_size;
             this->vars      = variables;
             this->domain    = domain;   
-            this->h         = 1.0 / (grid_size + 1.0);
+            this->h         = 1.0 / (grid_size - 2 + 1.0);
         }
 
 
@@ -44,28 +44,31 @@ struct Laplace2D
             {
                 this->grid(i, j) = 0.0;
 
-                // top boundary
+                // bottom boundary
                 if (i == 0)
                 {
-                    this->grid(i, j) = bc.top.evaluate(std::make_pair(i, j), vars, h);
+                    this->grid(i, j) = bc.bottom.evaluate(std::make_pair(i, j), vars, h);
                 }
 
-                // bottom boundary
+                // top boundary
                 if (i == GRID_SIZE - 1)
                 {
-                    this->grid(i, j) = bc.bottom.evaluate(std::make_pair(i, j), vars, h);
+                    this->grid(i, j) = bc.top.evaluate(std::make_pair(i, j), vars, h);
+                    // std::cout << std::get<GiNaC::ex>(*bc.top.expr) << " top\n\n";
                 }
 
                 // left boundary
                 if (j == 0 && (i > 0 && i < GRID_SIZE - 1)) // keep top's value
                 {
                     this->grid(i, j) = bc.left.evaluate(std::make_pair(i, j), vars, h);
+                    // std::cout << std::get<double>(*bc.left.expr) << " left\n\n";
                 }
 
                 // right boundary
                 if (j == GRID_SIZE - 1 && (i > 0 && i < GRID_SIZE - 1))
                 {
                     this->grid(i, j) = bc.right.evaluate(std::make_pair(i, j), vars, h);
+                    // std::cout << std::get<double>(*bc.right.expr) << " right\n\n";
                 }
             }
         }
@@ -90,15 +93,16 @@ struct Laplace2D
             for (int j = 1; j <= N; j++)
             {
                 k = (i - 1) * N + (j - 1);
+                printf("k: %d i: %d j: %d\n", k, i, j);
 
                 system.A(k, k) = -4.0;
 
-                if (i == N) // bottom neighbor
+                if (i == N) // top neighbor
                     system.b(k) -= grid(i + 1, j);
                 else
                     system.A(k, k + N) = 1.0;
 
-                if (i == 1) // top neighbor
+                if (i == 1) // bottom neighbor
                     system.b(k) -= grid(i - 1, j);
                 else
                     system.A(k, k - N) = 1.0;
@@ -140,6 +144,10 @@ struct Laplace2D
         std::filesystem::create_directories(full_path.parent_path());
 
         std::ofstream file(full_path);
+
+        file << "C h:"         << this->h             << '\n';
+        file << "C GRID SIZE:" << this->GRID_SIZE     << '\n';
+        file << "C N:"         << this->GRID_SIZE - 2 << '\n';
 
         for (int i = 0; i < N; i++)
         {

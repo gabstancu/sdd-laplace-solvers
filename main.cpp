@@ -259,43 +259,71 @@ void evaluate_preconditioners ()
 int main ()
 {   
     
+    std::vector<GiNaC::symbol> variables;
+    GiNaC::symbol              x_("x"), y_("y"); 
+
+    variables.push_back(x_); 
+    variables.push_back(y_);
+    std::pair<std::pair<double, double>, std::pair<double, double>> domain;
+    domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
+
+    GiNaC::ex top    = x_;
+    GiNaC::ex bottom = GiNaC::pow(x_, 2);
+    GiNaC::ex left   = y_;
+    GiNaC::ex right  = GiNaC::pow(y_, 2);
+    // double left      = 4;
+    // double right     = 5;
+
+
+    Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(6, variables, domain);
+    laplace.bc.top.expr    = top;
+    laplace.bc.bottom.expr = bottom;
+    laplace.bc.left.expr   = left;
+    laplace.bc.right.expr  = right;
+    laplace.initialise_grid();
+
+
+    LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
+    double omega_ = system.calc_omega_();
+
+    std::cout << laplace.grid << "\n";
     // evaluate_loop();
     // evaluate_preconditioners();
 
     /* ------------------------- Usage example -------------------------*/
-    int N = 5;
+    // int N = 5;
 
-    Eigen::MatrixXd A(N, N);
-    A <<  2, -1,  0,  0,  0,
-         -1,  2, -1,  0,  0, 
-          0, -1,  2, -1,  0, 
-          0,  0, -1,  2, -1, 
-          0,  0,  0, -1,  2;
+    // Eigen::MatrixXd A(N, N);
+    // A <<  2, -1,  0,  0,  0,
+    //      -1,  2, -1,  0,  0, 
+    //       0, -1,  2, -1,  0, 
+    //       0,  0, -1,  2, -1, 
+    //       0,  0,  0, -1,  2;
 
-    double omega_ = 1.60;
+    // double omega_ = 1.60;
 
-    Eigen::VectorXd x_exact(N);
-    x_exact << 1, 2, 3, 4, 5;
+    // Eigen::VectorXd x_exact(N);
+    // x_exact << 1, 2, 3, 4, 5;
 
-    Eigen::VectorXd  b  = A * x_exact;
-    Eigen::VectorXd u_0 = Eigen::VectorXd::Zero(N); // initial guess
-    LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system{A, b, u_0};
+    // Eigen::VectorXd  b  = A * x_exact;
+    // Eigen::VectorXd u_0 = Eigen::VectorXd::Zero(N); // initial guess
+    // LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system{A, b, u_0};
 
-    SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(A, omega_);
-    PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "SSOR");
-    system.solve(solver);
-    std::cout << system.u << "\n\n";
-    solver.log.log_to_file();
+    // SSORPreconditioner<Eigen::MatrixXd, Eigen::VectorXd> precon(A, omega_);
+    // PCG<Eigen::MatrixXd, Eigen::VectorXd, decltype(precon)> solver(precon, "SSOR");
+    // system.solve(solver);
+    // std::cout << system.u << "\n\n";
+    // solver.log.log_to_file();
 
-    system.reset_solution();
+    // system.reset_solution();
 
-    ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
-    system.solve(CG);
-    solver.log.log_to_file();
+    // ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
+    // system.solve(CG);
+    // solver.log.log_to_file();
 
-    system.reset_solution();
+    // system.reset_solution();
 
-    system.solve_directly(false);
+    // system.solve_directly(false);
 
     return 0;
 }

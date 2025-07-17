@@ -2,7 +2,7 @@ C Solver: PCG
 C Precon.: SSOR
 C Variables: 5
 C Iterations performed: 4
-C Time elapsed: 0.000106625
+C Time elapsed: 7.925e-05
 C Converged: 1
 C Residual per iteration: 0.252527 0.0322764 0.000607918 2.49175e-06 
 C Final solution: 1 2 3 4 5 
