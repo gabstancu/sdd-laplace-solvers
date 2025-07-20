@@ -22,10 +22,12 @@ void evaluate_loop ()
     std::pair<std::pair<double, double>, std::pair<double, double>> domain;
     domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
 
-    GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_);
-    GiNaC::ex bottom = GiNaC::pow(x_, 2) + GiNaC::pow(y_, 2);
-    double left      = 4;
-    double right     = 5;
+    GiNaC::ex top    = 4 * GiNaC::sin(3 * GiNaC::Pi * x_);
+    GiNaC::ex bottom = GiNaC::sin(GiNaC::Pi * x_);
+    double left      = 0;
+    double right     = 0;
+
+    /* define analytical solution */
 
     for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
     {   
@@ -143,10 +145,10 @@ void evaluate_preconditioners ()
     std::pair<std::pair<double, double>, std::pair<double, double>> domain;
     domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
 
-    GiNaC::ex top       = GiNaC::sin(GiNaC::Pi * x_);
-    GiNaC::ex bottom    = GiNaC::pow(x_, 2) + GiNaC::pow(y_, 2);
-    double    left      = 4;
-    double    right     = 5;
+    GiNaC::ex top    = 4 * GiNaC::sin(3 * GiNaC::Pi * x_);
+    GiNaC::ex bottom = GiNaC::sin(GiNaC::Pi * x_);
+    double left      = 0;
+    double right     = 0;
 
 
 
@@ -259,46 +261,48 @@ void evaluate_preconditioners ()
 int main ()
 {   
     
-    std::vector<GiNaC::symbol> variables;
-    GiNaC::symbol              x_("x"), y_("y"); 
+    // std::vector<GiNaC::symbol> variables;
+    // GiNaC::symbol              x_("x"), y_("y"); 
 
-    variables.push_back(x_); 
-    variables.push_back(y_);
-    std::pair<std::pair<double, double>, std::pair<double, double>> domain;
-    domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
+    // variables.push_back(x_); 
+    // variables.push_back(y_);
+    // std::pair<std::pair<double, double>, std::pair<double, double>> domain;
+    // domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
 
-    GiNaC::ex top    = x_;
-    GiNaC::ex bottom = GiNaC::pow(x_, 2);
-    GiNaC::ex left   = y_;
-    GiNaC::ex right  = GiNaC::pow(y_, 2);
-    // double left      = 4;
-    // double right     = 5;
-
-
-    Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(6, variables, domain);
-    laplace.bc.top.expr    = top;
-    laplace.bc.bottom.expr = bottom;
-    laplace.bc.left.expr   = left;
-    laplace.bc.right.expr  = right;
-    laplace.initialise_grid();
+    // GiNaC::ex top    = x_;
+    // GiNaC::ex bottom = GiNaC::pow(x_, 2);
+    // GiNaC::ex left   = y_;
+    // GiNaC::ex right  = GiNaC::pow(y_, 2);
+    // // double left      = 4;
+    // // double right     = 5;
 
 
-    LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
-    double omega_ = system.calc_omega_();
+    // Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(6, variables, domain);
+    // laplace.bc.top.expr    = top;
+    // laplace.bc.bottom.expr = bottom;
+    // laplace.bc.left.expr   = left;
+    // laplace.bc.right.expr  = right;
+    // laplace.initialise_grid();
 
-    std::cout << laplace.grid << "\n";
-    // evaluate_loop();
-    // evaluate_preconditioners();
+
+    // LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
+    // double omega_ = system.calc_omega_();
+
+    // std::cout << laplace.grid << "\n";
+    // std::cout << system.A << "\n";
+
+    evaluate_loop();
+    evaluate_preconditioners();
 
     /* ------------------------- Usage example -------------------------*/
     // int N = 5;
 
     // Eigen::MatrixXd A(N, N);
-    // A <<  2, -1,  0,  0,  0,
-    //      -1,  2, -1,  0,  0, 
-    //       0, -1,  2, -1,  0, 
-    //       0,  0, -1,  2, -1, 
-    //       0,  0,  0, -1,  2;
+    // A <<  -2,  1,  0,  0,  0,
+    //        1, -2,  1,  0,  0, 
+    //        0,  1, -2,  1,  0, 
+    //        0,  0,  1, -2,  1, 
+    //        0,  0,  0,  1, -2;
 
     // double omega_ = 1.60;
 

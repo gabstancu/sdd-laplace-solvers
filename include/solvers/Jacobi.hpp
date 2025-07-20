@@ -6,10 +6,11 @@
 template<typename Matrix, typename Vector>
 struct Jacobi
 {
-    double      tol       = DEFAULT_TOL;
-    int         max_iters = MAX_ITERS;
-    std::string name      = "Jacobi";
+    double      tol             = DEFAULT_TOL;
+    int         max_iters       = MAX_ITERS;
+    std::string name            = "Jacobi";
     Vector      final_solution;
+
     SolverLog<Eigen::VectorXd>   log;
 
     Jacobi ()

@@ -37,19 +37,6 @@ struct SSORPreconditioner
     Eigen::DiagonalMatrix<typename Vector::Scalar, Eigen::Dynamic> Dinv;
     double omega;
 
-    // SSORPreconditioner(Matrix& A, double omega_) : omega(omega_) 
-    // {
-    //     Matrix Diag_A  = A.diagonal().asDiagonal();
-    //     Matrix Upper_A = A.template triangularView<Eigen::StrictlyUpper>();
-    //     Matrix Lower_A = A.template triangularView<Eigen::StrictlyLower>();
-    //     this->M        = (omega_ / (2 - omega_)) * ((1/omega_) * Diag_A + Lower_A) * Diag_A.inverse() * ((1/omega_) * Diag_A + Lower_A).transpose();
-    // }
-
-    // Vector apply(Vector r) 
-    // {
-    //     return M.inverse() * r;
-    // }
-
     SSORPreconditioner(Matrix& A, double omega_) : omega(omega_) 
     {
         Eigen::VectorXd Dvec = A.diagonal();
@@ -100,6 +87,21 @@ struct IncompleteCholeskyPreconditioner
     Vector apply(Vector r) 
     {
         return ichol.solve(r);
+    }
+};
+
+
+template<typename Matrix, typename Vector>
+struct IncompleteCholeskyPreconditioner_
+{
+    IncompleteCholeskyPreconditioner_(Matrix& A)
+    {
+
+    }
+
+    Vector apply (Vector r)
+    {
+
     }
 };
 

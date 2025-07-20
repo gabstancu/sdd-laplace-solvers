@@ -65,8 +65,8 @@ struct BoundaryCondition
             if (this->is_constant())
             {   
                 val = std::get<double>(*expr);
-                printf("i: %d j: %d | x: %f y: %f val: %f\n", i, j, j*h, i*h, val);
-                std::cout << val << " " << to_string(this->side) << "\n\n";
+                // printf("i: %d j: %d | x: %f y: %f val: %f\n", i, j, j*h, i*h, val);
+                // std::cout << val << " " << to_string(this->side) << "\n\n";
                 return val;
             }
             else if (this->is_expression())
@@ -76,8 +76,8 @@ struct BoundaryCondition
                 GiNaC::ex b_expr = std::get<GiNaC::ex>(*expr);
                 GiNaC::ex evaluated_boundary = b_expr.subs(m).evalf();
                 val = GiNaC::ex_to<GiNaC::numeric>(evaluated_boundary).to_double();
-                printf("i: %d j: %d | x: %f y: %f val: %f\n", i, j, j*h, i*h, val);
-                std::cout << b_expr << " " << to_string(this->side) << "\n\n";
+                // printf("i: %d j: %d | x: %f y: %f val: %f\n", i, j, j*h, i*h, val);
+                // std::cout << b_expr << " " << to_string(this->side) << "\n\n";
                 return val;
             }
         }

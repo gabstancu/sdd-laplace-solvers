@@ -10,8 +10,8 @@ struct LinearSystem
 {
     Matrix  A;
     Vector  b;
-    Vector  u;  // solution vector (initial guess)
-    Vector _u_; // ground truth solution
+    Vector  u; 
+    Vector _u_; // direct solution
     int     N ;
     double  omega_;
 

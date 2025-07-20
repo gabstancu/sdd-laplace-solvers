@@ -36,8 +36,6 @@ struct Laplace2D
         this->grid.resize(GRID_SIZE, GRID_SIZE);
         double boundary_val;
 
-        std::optional<BoundaryType> boundary;
-
         for (int i = 0; i < GRID_SIZE; i++)
         {
             for (int j = 0; j < GRID_SIZE; j++)
@@ -54,21 +52,18 @@ struct Laplace2D
                 if (i == GRID_SIZE - 1)
                 {
                     this->grid(i, j) = bc.top.evaluate(std::make_pair(i, j), vars, h);
-                    // std::cout << std::get<GiNaC::ex>(*bc.top.expr) << " top\n\n";
                 }
 
                 // left boundary
-                if (j == 0 && (i > 0 && i < GRID_SIZE - 1)) // keep top's value
+                if (j == 0 && (i > 0 && i < GRID_SIZE - 1)) // keep top value
                 {
                     this->grid(i, j) = bc.left.evaluate(std::make_pair(i, j), vars, h);
-                    // std::cout << std::get<double>(*bc.left.expr) << " left\n\n";
                 }
 
                 // right boundary
                 if (j == GRID_SIZE - 1 && (i > 0 && i < GRID_SIZE - 1))
                 {
                     this->grid(i, j) = bc.right.evaluate(std::make_pair(i, j), vars, h);
-                    // std::cout << std::get<double>(*bc.right.expr) << " right\n\n";
                 }
             }
         }
@@ -86,38 +81,38 @@ struct Laplace2D
         system.u = Eigen::VectorXd::Zero(dim);
         system.N = GRID_SIZE;
 
-        /* ( -4 u_{i, j} + u_{i+1, j} + u_{i-1, j} + u_{i, j+1} + u_{i, j-1} ) / h^2 = 0 */
+        /* ( 4 u_{i, j} - u_{i+1, j} - u_{i-1, j} - u_{i, j+1} - u_{i, j-1} ) / h^2 = 0 */
         int k;
         for (int i = 1; i <= N; i++)
         {
             for (int j = 1; j <= N; j++)
             {
                 k = (i - 1) * N + (j - 1);
-                printf("k: %d i: %d j: %d\n", k, i, j);
+                // printf("k: %d i: %d j: %d\n", k, i, j);
 
-                system.A(k, k) = -4.0;
+                system.A(k, k) = 4.0;
 
                 if (i == N) // top neighbor
-                    system.b(k) -= grid(i + 1, j);
+                    system.b(k) += grid(i + 1, j);
                 else
-                    system.A(k, k + N) = 1.0;
+                    system.A(k, k + N) = -1.0;
 
                 if (i == 1) // bottom neighbor
-                    system.b(k) -= grid(i - 1, j);
+                    system.b(k) += grid(i - 1, j);
                 else
-                    system.A(k, k - N) = 1.0;
+                    system.A(k, k - N) = -1.0;
 
 
                 if (j == N) // right neighbor
-                    system.b(k) -= grid(i, j + 1) ;
+                    system.b(k) += grid(i, j + 1) ;
                 else
-                    system.A(k, k + 1) = 1.0;
+                    system.A(k, k + 1) = -1.0;
 
 
                 if (j == 1) // left neighbor
-                    system.b(k) -= grid(i, j - 1);
+                    system.b(k) += grid(i, j - 1);
                 else
-                    system.A(k, k - 1) = 1.0;
+                    system.A(k, k - 1) = -1.0;
             }
         }
         return system;
