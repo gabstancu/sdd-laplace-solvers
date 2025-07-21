@@ -50,7 +50,7 @@ struct SolverLog
             std::cout << "Directory already exists or failed to create.\n";
         }
 
-        std::string filename = solver_name + "_";
+        std::string filename = log_path + solver_name + "_";
         if (!precon_name.empty())
             filename += precon_name + "_";
         filename += std::to_string(system_dim) + ".txt";

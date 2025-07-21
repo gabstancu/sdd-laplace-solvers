@@ -1,8 +1,0 @@
-C Solver: PCG
-C Precon.: Diagonal
-C Variables: 5
-C Iterations performed: 5
-C Time elapsed: 3.0458e-05
-C Converged: 1
-C Residual per iteration: 0.65437 0.508872 0.415564 0.259402 1.52045e-13 
-C Final solution: 1 2 3 4 5 

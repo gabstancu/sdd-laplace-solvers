@@ -69,6 +69,7 @@ struct Laplace2D
         }
     }
 
+
     LinearSystem<Matrix, Vector> construct_system ()
     {   
         std::cout << "Constructing system...\n";
@@ -79,7 +80,7 @@ struct Laplace2D
         system.A = Eigen::MatrixXd::Zero(dim, dim);
         system.b = Eigen::VectorXd::Zero(dim);
         system.u = Eigen::VectorXd::Zero(dim);
-        system.N = GRID_SIZE;
+        system.N = N;
 
         /* ( 4 u_{i, j} - u_{i+1, j} - u_{i-1, j} - u_{i, j+1} - u_{i, j-1} ) / h^2 = 0 */
         int k;
@@ -118,6 +119,7 @@ struct Laplace2D
         return system;
     }
 
+
     void fill_grid (Vector u)
     {
         int N = this->grid.rows();
@@ -131,6 +133,7 @@ struct Laplace2D
             this->grid(i, j) = u(k);
         }
     }
+
 
     void save_grid (std::string folder, std::string filename)
     {   
@@ -153,6 +156,24 @@ struct Laplace2D
             file << '\n';
         }
         std::cout << "Grid saved to: " << full_path << '\n';
+    }
+
+
+    void evaluate_analytical_solution (Matrix& matrix, GiNaC::ex analytical_solution)
+    {   
+        matrix.resize(GRID_SIZE, GRID_SIZE);
+
+        double x_ = 0.0, y_ = 0.0;
+
+        for (int y = 0; y <= GRID_SIZE; y++)
+        {   
+            y_ = h * y;
+            for (int x = 0; x <= GRID_SIZE; x++)
+            {
+                x_ = h * x;
+                printf("(x, y): (%d, %d) ----- (x_, y_): (%f, %f)\n", x, y, x_, y_);
+            }
+        }
     }
 
     void print ()

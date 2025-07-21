@@ -60,7 +60,7 @@ struct LinearSystem
 
     double calc_omega_()
     {
-        this->omega_ = 2.0 / (1 + std::sin((M_PI) / (this->N + 1)));
+        this->omega_ = 2.0 / (1 + std::sin((M_PI) / this->N ));
         this->omega_ = std::min(this->omega_, 1.9 + (0.05) / this->N);
         return this->omega_;
     }

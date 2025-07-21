@@ -11,6 +11,8 @@
 #define MAX_GRID_DIMENSION   100
 #define STEP_SIZE            8
  
+/* TODO: evaluate analytical solution for all h at each iteration and store in capstone/analytical_solution_{GRID_SIZE} */
+
 /* capstone project part */
 void evaluate_loop ()
 {
@@ -27,7 +29,8 @@ void evaluate_loop ()
     double left      = 0;
     double right     = 0;
 
-    /* define analytical solution */
+    GiNaC::ex analytical_solution = (1 / GiNaC::sinh(GiNaC::Pi)) * GiNaC::sinh(GiNaC::Pi * (1 - y_)) * GiNaC::sin(GiNaC::Pi * x_)
+                                  + (4 / GiNaC::sinh(3 * GiNaC::Pi)) * GiNaC::sinh(3 * GiNaC::Pi * y_) * GiNaC::sin(3 * GiNaC::Pi * x_);
 
     for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
     {   
@@ -131,9 +134,10 @@ void evaluate_loop ()
         laplace.save_grid("capstone/grids", gridfile);
         system.reset_solution();
 
-        system.solve_directly(true);
+        // system.solve_directly(true);
     }
 }
+
 
 void evaluate_preconditioners ()
 {
@@ -150,6 +154,8 @@ void evaluate_preconditioners ()
     double left      = 0;
     double right     = 0;
 
+    GiNaC::ex analytical_solution = (1 / GiNaC::sinh(GiNaC::Pi)) * GiNaC::sinh(GiNaC::Pi * (1 - y_)) * GiNaC::sin(GiNaC::Pi * x_)
+                                  + (4 / GiNaC::sinh(3 * GiNaC::Pi)) * GiNaC::sinh(3 * GiNaC::Pi * y_) * GiNaC::sin(3 * GiNaC::Pi * x_);
 
 
     for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim += STEP_SIZE)
@@ -261,28 +267,34 @@ void evaluate_preconditioners ()
 int main ()
 {   
     
-    // std::vector<GiNaC::symbol> variables;
-    // GiNaC::symbol              x_("x"), y_("y"); 
+    std::vector<GiNaC::symbol> variables;
+    GiNaC::symbol              x_("x"), y_("y"); 
+    int GRID_SIZE = 6;
 
-    // variables.push_back(x_); 
-    // variables.push_back(y_);
-    // std::pair<std::pair<double, double>, std::pair<double, double>> domain;
-    // domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
+    variables.push_back(x_); 
+    variables.push_back(y_);
+    std::pair<std::pair<double, double>, std::pair<double, double>> domain;
+    domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
 
-    // GiNaC::ex top    = x_;
-    // GiNaC::ex bottom = GiNaC::pow(x_, 2);
-    // GiNaC::ex left   = y_;
-    // GiNaC::ex right  = GiNaC::pow(y_, 2);
-    // // double left      = 4;
-    // // double right     = 5;
+    GiNaC::ex top    = 0;
+    GiNaC::ex bottom = GiNaC::pow(x_, 2);
+    GiNaC::ex left   = -69;
+    GiNaC::ex right  = -69;
+    // double left      = 4;
+    // double right     = 5;
 
+    GiNaC::ex analytical_solution = (1 / GiNaC::sinh(GiNaC::Pi)) * GiNaC::sinh(GiNaC::Pi * (1 - y_)) * GiNaC::sin(GiNaC::Pi * x_)
+                                  + (4 / GiNaC::sinh(3 * GiNaC::Pi)) * GiNaC::sinh(3 * GiNaC::Pi * y_) * GiNaC::sin(3 * GiNaC::Pi * x_);
 
-    // Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(6, variables, domain);
-    // laplace.bc.top.expr    = top;
-    // laplace.bc.bottom.expr = bottom;
-    // laplace.bc.left.expr   = left;
-    // laplace.bc.right.expr  = right;
-    // laplace.initialise_grid();
+    Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(GRID_SIZE, variables, domain);
+    laplace.bc.top.expr    = top;
+    laplace.bc.bottom.expr = bottom;
+    laplace.bc.left.expr   = left;
+    laplace.bc.right.expr  = right;
+    laplace.initialise_grid();
+
+    Eigen::MatrixXd analytical_matrix;
+    laplace.evaluate_analytical_solution(analytical_matrix, analytical_solution);
 
 
     // LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
@@ -291,8 +303,8 @@ int main ()
     // std::cout << laplace.grid << "\n";
     // std::cout << system.A << "\n";
 
-    evaluate_loop();
-    evaluate_preconditioners();
+    // evaluate_loop();
+    // evaluate_preconditioners();
 
     /* ------------------------- Usage example -------------------------*/
     // int N = 5;
