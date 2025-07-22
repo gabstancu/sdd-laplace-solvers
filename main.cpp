@@ -44,12 +44,15 @@ void evaluate_loop ()
         laplace.initialise_grid();
         laplace.evaluate_analytical_solution();
 
+        std::string gridfile = "analytical_"+std::to_string(dim)+".dat";
+        laplace.save_grid(gridfile, true, "capstone/grids/");
+
+
         LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
         double omega_ = system.calc_omega_();
         std::cout << "omega_: " << omega_ << '\n';
 
 
-        // system = laplace.construct_system();
         ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
         std::cout << "----------------------- " << CG.name << " -----------------------\n";
 
@@ -62,10 +65,6 @@ void evaluate_loop ()
         CG.log.log_to_file(log_path+filename);
 
         laplace.fill_grid(system.u);
-        std::string gridfile = CG.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/grids", false, gridfile);
-        gridfile = CG.name + "/approx_grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/grids", true, gridfile);
         system.reset_solution();
 
 
@@ -82,13 +81,8 @@ void evaluate_loop ()
         PCG.log.log_to_file(log_path+filename);
 
         laplace.fill_grid(system.u);
-        gridfile = PCG.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/grids", false, gridfile);
-        gridfile = PCG.name + "/approx_grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/grids", true, gridfile);
         system.reset_solution();
 
-        // system = laplace.construct_system();
         GaussSeidel<Eigen::MatrixXd, Eigen::VectorXd> GS;
         std::cout << "----------------------- " << GS.name << " -----------------------\n";
 
@@ -101,13 +95,8 @@ void evaluate_loop ()
         GS.log.log_to_file(log_path+filename);
 
         laplace.fill_grid(system.u);
-        gridfile = GS.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/grids", false, gridfile);
-        gridfile = GS.name + "/approx_grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/grids", true, gridfile);
         system.reset_solution();
 
-        // system = laplace.construct_system();
         Jacobi<Eigen::MatrixXd, Eigen::VectorXd> Jacobi;
         std::cout << "----------------------- " << Jacobi.name << " -----------------------\n";
 
@@ -120,13 +109,8 @@ void evaluate_loop ()
         Jacobi.log.log_to_file(log_path+filename);
 
         laplace.fill_grid(system.u);
-        gridfile = Jacobi.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/grids", false, gridfile);
-        gridfile = Jacobi.name + "/approx_grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/grids", true, gridfile);
         system.reset_solution();
 
-        // system = laplace.construct_system();
         SOR<Eigen::MatrixXd, Eigen::VectorXd> SOR(omega_);
         std::cout << "----------------------- " << SOR.name << " -----------------------\n";
 
@@ -139,13 +123,7 @@ void evaluate_loop ()
         SOR.log.log_to_file(log_path+filename);
 
         laplace.fill_grid(system.u);
-        gridfile = SOR.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/grids", false, gridfile);
-        gridfile = SOR.name + "approx_grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/grids", true, gridfile);
         system.reset_solution();
-
-        // system.solve_directly(true);
     }
 }
 
@@ -178,6 +156,10 @@ void evaluate_preconditioners ()
         laplace.bc.left.expr   = left;
         laplace.bc.right.expr  = right;
         laplace.initialise_grid();
+        laplace.evaluate_analytical_solution();
+
+        std::string gridfile = "analytical_"+std::to_string(dim)+".dat";
+        laplace.save_grid(gridfile, true, "capstone/grids/");
 
         LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
         double omega_ = system.calc_omega_();
@@ -193,15 +175,13 @@ void evaluate_preconditioners ()
 
         std::string log_path = get_current_working_directory() + "/capstone/eval_precon/" + PCG_I.precon_name +"/";
         std::filesystem::create_directories(log_path);
-        std::string filename = PCG_I.name + "_" + std::to_string(dim) + ".txt";
+        std::string filename = PCG_I.name + "_approx_" + std::to_string(dim) + ".txt";
 
         system.solve(PCG_I);
         PCG_I.log.print();
         PCG_I.log.log_to_file(log_path+filename);
 
         laplace.fill_grid(system.u);
-        std::string gridfile = PCG_I.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/precon_grids", false, gridfile);
         system.reset_solution();
 
 
@@ -215,15 +195,13 @@ void evaluate_preconditioners ()
 
         log_path = get_current_working_directory() + "/capstone/eval_precon/" + PCG_D.precon_name +"/";
         std::filesystem::create_directories(log_path);
-        filename = PCG_D.name + "_" + std::to_string(dim) + ".txt";
+        filename = PCG_D.name + "_approx_" + std::to_string(dim) + ".txt";
 
         system.solve(PCG_D);
         PCG_D.log.print();
         PCG_D.log.log_to_file(log_path+filename);
 
         laplace.fill_grid(system.u);
-        gridfile = PCG_D.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/precon_grids", false, gridfile);
         system.reset_solution();
 
 
@@ -237,16 +215,13 @@ void evaluate_preconditioners ()
 
         log_path = get_current_working_directory() + "/capstone/eval_precon/" + PCG_SSOR.precon_name +"/";
         std::filesystem::create_directories(log_path);
-        filename = PCG_SSOR.name + "_" + std::to_string(dim) + ".txt";
+        filename = PCG_SSOR.name + "_approx_" + std::to_string(dim) + ".txt";
 
         system.solve(PCG_SSOR);
         PCG_SSOR.log.print();
         PCG_SSOR.log.log_to_file(log_path+filename);
 
         laplace.fill_grid(system.u);
-        gridfile = PCG_SSOR.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/precon_grids", false, gridfile);
-
         system.reset_solution();
 
         std::cout << "------------- Incomplete Cholesky -------------\n";
@@ -260,16 +235,13 @@ void evaluate_preconditioners ()
 
         log_path = get_current_working_directory() + "/capstone/eval_precon/" + PCG_IC.precon_name +"/";
         std::filesystem::create_directories(log_path);
-        filename = PCG_IC.name + "_" + std::to_string(dim) + ".txt";
+        filename = PCG_IC.name + "_approx_" + std::to_string(dim) + ".txt";
 
         system.solve(PCG_IC);
         PCG_IC.log.print();
         PCG_IC.log.log_to_file(log_path+filename);
 
         laplace.fill_grid(system.u);
-        gridfile = PCG_IC.name + "/grid_" + std::to_string(dim) + ".dat";
-        laplace.save_grid("capstone/precon_grids", false, gridfile);
-
         system.reset_solution();
     }
 }
@@ -278,39 +250,39 @@ void evaluate_preconditioners ()
 int main ()
 {   
     
-    std::vector<GiNaC::symbol> variables;
-    GiNaC::symbol              x_("x"), y_("y"); 
-    int GRID_SIZE = 15;
+    // std::vector<GiNaC::symbol> variables;
+    // GiNaC::symbol              x_("x"), y_("y"); 
+    // int GRID_SIZE = 10;
 
-    variables.push_back(x_); 
-    variables.push_back(y_);
-    std::pair<std::pair<double, double>, std::pair<double, double>> domain;
-    domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
+    // variables.push_back(x_); 
+    // variables.push_back(y_);
+    // std::pair<std::pair<double, double>, std::pair<double, double>> domain;
+    // domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
 
-    GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi);
-    GiNaC::ex bottom = 0;
-    double left      = 0;
-    double right     = 0;
-    // double left      = 4;
-    // double right     = 5;
+    // GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi);
+    // GiNaC::ex bottom = 0;
+    // double left      = 0;
+    // double right     = 0;
+    // // double left      = 4;
+    // // double right     = 5;
 
-    GiNaC::ex analytical_solution = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi * y_);
+    // GiNaC::ex analytical_solution = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi * y_);
 
-    Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(GRID_SIZE, variables, domain);
-    laplace.bc.top.expr    = top;
-    laplace.bc.bottom.expr = bottom;
-    laplace.bc.left.expr   = left;
-    laplace.bc.right.expr  = right;
-    laplace.initialise_grid();
-    laplace.analytical_expression = analytical_solution;
+    // Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(GRID_SIZE, variables, domain);
+    // laplace.bc.top.expr    = top;
+    // laplace.bc.bottom.expr = bottom;
+    // laplace.bc.left.expr   = left;
+    // laplace.bc.right.expr  = right;
+    // laplace.initialise_grid();
+    // laplace.analytical_expression = analytical_solution;
 
-    // std::cout << laplace.grid << "\n\n";
+    // // std::cout << laplace.grid << "\n\n";
 
-    laplace.evaluate_analytical_solution();
-    // std::cout << laplace.analytical_solution << "\n\n";
+    // laplace.evaluate_analytical_solution();
+    // // std::cout << laplace.analytical_solution << "\n\n";
 
-    LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
-    double omega_ = system.calc_omega_();
+    // LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
+    // double omega_ = system.calc_omega_();
 
     // // std::cout << laplace.grid << "\n";
     // // std::cout << "Coefficient matrix:\n" << system.A << "\n";
@@ -329,8 +301,8 @@ int main ()
     // // filename = solver.name + "_analytical_" + std::to_string(GRID_SIZE) + ".txt";
     // // laplace.save_grid(filename, true);
 
-    // // evaluate_loop();
-    // // evaluate_preconditioners();
+    evaluate_loop();
+    evaluate_preconditioners();
 
     // /* ------------------------- Usage example -------------------------*/
     // // int N = 5;
@@ -359,13 +331,13 @@ int main ()
 
     // // system.reset_solution();
 
-    ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
-    system.solve(CG);
-    laplace.fill_grid(system.u);
-    std::cout << "Appoximation:\n" << laplace.grid << "\n\n";
-    std::cout << "Analytical:\n" << laplace.analytical_solution << "\n\n";
+    // ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
+    // system.solve(CG);
+    // laplace.fill_grid(system.u);
+    // std::cout << "Appoximation:\n" << laplace.grid << "\n\n";
+    // std::cout << "Analytical:\n" << laplace.analytical_solution << "\n\n";
 
-    std::cout << "Analytical / approximation diff.:\n" << laplace.analytical_solution - laplace.grid << "\n";
+    // std::cout << "Analytical / approximation diff.:\n" << laplace.analytical_solution - laplace.grid << "\n";
 
     // std::string filename = CG.name + "_approx_" + std::to_string(GRID_SIZE) + ".txt";
     // laplace.save_grid(filename, false);

@@ -150,6 +150,7 @@ struct Laplace2D
         /*  log approximation  */
         std::filesystem::path full_path = std::filesystem::current_path() / folder_name / filename;
         std::filesystem::create_directories(full_path.parent_path());
+        // std::cout << "FULL PATH: " << full_path << "\n\n";
 
         std::ofstream file(full_path);
 
@@ -168,6 +169,7 @@ struct Laplace2D
                 file << '\n';
             }
             std::cout << "Approximation saved to: " << full_path << '\n';
+            return;
         }
         else if (analytical)
         {
@@ -180,6 +182,7 @@ struct Laplace2D
                 file << '\n';
             }
             std::cout << "Analytical solution saved to: " << full_path << '\n';
+            return;
         }
     }
 
