@@ -9,10 +9,12 @@ struct Laplace2D
 {   
     int    GRID_SIZE;
     Matrix grid;
+    Matrix analytical_solution;
     double h;
     std::pair<std::pair<double, double>, std::pair<double, double>> domain;
     BoundaryConditions bc;
     std::vector<GiNaC::symbol> vars;
+    GiNaC::ex analytical_expression;
 
     Laplace2D (int grid_size, 
                std::vector<GiNaC::symbol> variables, 
@@ -42,28 +44,28 @@ struct Laplace2D
             {
                 this->grid(i, j) = 0.0;
 
-                // bottom boundary
+                // top boundary
                 if (i == 0)
                 {
-                    this->grid(i, j) = bc.bottom.evaluate(std::make_pair(i, j), vars, h);
+                    this->grid(i, j) = bc.top.evaluate(std::make_pair(j, GRID_SIZE - 1 - i), vars, h);
                 }
 
-                // top boundary
+                // bottom boundary
                 if (i == GRID_SIZE - 1)
                 {
-                    this->grid(i, j) = bc.top.evaluate(std::make_pair(i, j), vars, h);
+                    this->grid(i, j) = bc.bottom.evaluate(std::make_pair(j, GRID_SIZE - 1 - i), vars, h);
                 }
 
                 // left boundary
                 if (j == 0 && (i > 0 && i < GRID_SIZE - 1)) // keep top value
                 {
-                    this->grid(i, j) = bc.left.evaluate(std::make_pair(i, j), vars, h);
+                    this->grid(i, j) = bc.left.evaluate(std::make_pair(j, GRID_SIZE - 1 - i), vars, h);
                 }
 
                 // right boundary
                 if (j == GRID_SIZE - 1 && (i > 0 && i < GRID_SIZE - 1))
                 {
-                    this->grid(i, j) = bc.right.evaluate(std::make_pair(i, j), vars, h);
+                    this->grid(i, j) = bc.right.evaluate(std::make_pair(j, GRID_SIZE - 1 - i), vars, h);
                 }
             }
         }
@@ -72,7 +74,7 @@ struct Laplace2D
 
     LinearSystem<Matrix, Vector> construct_system ()
     {   
-        std::cout << "Constructing system...\n";
+        // std::cout << "Constructing system...\n";
         LinearSystem<Matrix, Vector> system;
         int N    = GRID_SIZE - 2; // inner grid dimension
         int dim  = int(std::pow(N, 2));
@@ -100,9 +102,10 @@ struct Laplace2D
 
                 if (i == 1) // bottom neighbor
                     system.b(k) += grid(i - 1, j);
+                // if (i == 1) 
+                //     system.b(k) += grid(i + 1, j);
                 else
                     system.A(k, k - N) = -1.0;
-
 
                 if (j == N) // right neighbor
                     system.b(k) += grid(i, j + 1) ;
@@ -135,10 +138,17 @@ struct Laplace2D
     }
 
 
-    void save_grid (std::string folder, std::string filename)
-    {   
+    void save_grid (std::string filename, bool analytical, std::string folder = "")
+    {    
+        std::string folder_name = folder;
+        if (folder.empty())
+        {
+            std::string folder_name = "grids/";
+        }
         int N = this->grid.rows();
-        std::filesystem::path full_path = std::filesystem::current_path() / folder / filename;
+
+        /*  log approximation  */
+        std::filesystem::path full_path = std::filesystem::current_path() / folder_name / filename;
         std::filesystem::create_directories(full_path.parent_path());
 
         std::ofstream file(full_path);
@@ -147,34 +157,59 @@ struct Laplace2D
         file << "C GRID SIZE:" << this->GRID_SIZE     << '\n';
         file << "C N:"         << this->GRID_SIZE - 2 << '\n';
 
-        for (int i = 0; i < N; i++)
+        if (!analytical)
         {
-            for (int j = 0; j < N; j++)
+            for (int i = 0; i < N; i++)
             {
-                file << this->grid(i, j) << " "; 
+                for (int j = 0; j < N; j++)
+                {
+                    file << this->grid(i, j) << " "; 
+                }
+                file << '\n';
             }
-            file << '\n';
+            std::cout << "Approximation saved to: " << full_path << '\n';
         }
-        std::cout << "Grid saved to: " << full_path << '\n';
+        else if (analytical)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < N; j++)
+                {
+                    file << this->analytical_solution(i, j) << " "; 
+                }
+                file << '\n';
+            }
+            std::cout << "Analytical solution saved to: " << full_path << '\n';
+        }
     }
 
 
-    void evaluate_analytical_solution (Matrix& matrix, GiNaC::ex analytical_solution)
+    void evaluate_analytical_solution ()
     {   
-        matrix.resize(GRID_SIZE, GRID_SIZE);
+        this->analytical_solution.resize(GRID_SIZE, GRID_SIZE);
 
         double x_ = 0.0, y_ = 0.0;
 
-        for (int y = 0; y <= GRID_SIZE; y++)
+        for (int i = 0; i < GRID_SIZE; i++)
         {   
-            y_ = h * y;
-            for (int x = 0; x <= GRID_SIZE; x++)
+            y_ = h * (GRID_SIZE - 1 - i); 
+            for (int j = 0; j < GRID_SIZE; j++)
             {
-                x_ = h * x;
-                printf("(x, y): (%d, %d) ----- (x_, y_): (%f, %f)\n", x, y, x_, y_);
+                x_ = h * j;
+                this->analytical_solution(i, j) = this->grid(i, j);
+                // printf("(%d, %d), (x_, y_) -> (%f, %f)\n", i, j, x_, y_);
+                if ((i>=1 && i <= GRID_SIZE - 2) && (j>=1 && j <= GRID_SIZE - 2))
+                {
+                    GiNaC::exmap m;
+                    m[vars[0]] = x_; m[vars[1]] = y_;
+                    GiNaC::ex evaluated_expression  = this->analytical_expression.subs(m).evalf();
+                    double    value                 = GiNaC::ex_to<GiNaC::numeric>(evaluated_expression).to_double();
+                    this->analytical_solution(i, j) = value;
+                }
             }
         }
     }
+
 
     void print ()
     {

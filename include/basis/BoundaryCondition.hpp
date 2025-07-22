@@ -58,7 +58,7 @@ struct BoundaryCondition
                      double h)
     {
         double val = 0.0;
-        int i = coordinates.first, j = coordinates.second;
+        int x = coordinates.first, y = coordinates.second;
 
         if (this->is_set())
         {
@@ -66,18 +66,17 @@ struct BoundaryCondition
             {   
                 val = std::get<double>(*expr);
                 // printf("i: %d j: %d | x: %f y: %f val: %f\n", i, j, j*h, i*h, val);
+                // printf("at point (x', y') -> (%f, %f)\n", x * h, y * h);
                 // std::cout << val << " " << to_string(this->side) << "\n\n";
                 return val;
             }
             else if (this->is_expression())
             {
                 GiNaC::exmap m; 
-                m[vars[0]] = j * h; m[vars[1]] = i * h;
+                m[vars[0]] = x * h; m[vars[1]] = y * h;
                 GiNaC::ex b_expr = std::get<GiNaC::ex>(*expr);
                 GiNaC::ex evaluated_boundary = b_expr.subs(m).evalf();
                 val = GiNaC::ex_to<GiNaC::numeric>(evaluated_boundary).to_double();
-                // printf("i: %d j: %d | x: %f y: %f val: %f\n", i, j, j*h, i*h, val);
-                // std::cout << b_expr << " " << to_string(this->side) << "\n\n";
                 return val;
             }
         }
