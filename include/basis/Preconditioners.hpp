@@ -15,16 +15,16 @@ struct IdentityPreconditioner
 template<typename Matrix, typename Vector>
 struct DiagonalPreconditioner
 {
-    Matrix M; // precon. to be applied
+    Vector M; // precon. to be applied
 
     DiagonalPreconditioner(Matrix& A) 
     { 
-        M = A.diagonal().asDiagonal().inverse(); 
+        M = A.diagonal().cwiseInverse(); 
     }
 
     Vector apply (Vector r) 
     { 
-        return M * r; 
+        return M.array() * r.array(); 
     }
 };
 

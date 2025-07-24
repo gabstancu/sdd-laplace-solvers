@@ -11,10 +11,12 @@ struct Laplace2D
     Matrix grid;
     Matrix analytical_solution;
     double h;
+    
     std::pair<std::pair<double, double>, std::pair<double, double>> domain;
-    BoundaryConditions bc;
+
+    BoundaryConditions         bc;
     std::vector<GiNaC::symbol> vars;
-    GiNaC::ex analytical_expression;
+    GiNaC::ex                  analytical_expression;
 
     Laplace2D (int grid_size, 
                std::vector<GiNaC::symbol> variables, 

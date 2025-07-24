@@ -124,6 +124,7 @@ void evaluate_loop ()
 
         laplace.fill_grid(system.u);
         system.reset_solution();
+        // break;
     }
 }
 
@@ -151,10 +152,11 @@ void evaluate_preconditioners ()
     {
         std::cout << "===================================== GRID DIMENSION " << dim << " =====================================\n";
         Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(dim, variables, domain);
-        laplace.bc.top.expr    = top;
-        laplace.bc.bottom.expr = bottom;
-        laplace.bc.left.expr   = left;
-        laplace.bc.right.expr  = right;
+        laplace.bc.top.expr           = top;
+        laplace.bc.bottom.expr        = bottom;
+        laplace.bc.left.expr          = left;
+        laplace.bc.right.expr         = right;
+        laplace.analytical_expression = analytical_solution;
         laplace.initialise_grid();
         laplace.evaluate_analytical_solution();
 
@@ -243,13 +245,15 @@ void evaluate_preconditioners ()
 
         laplace.fill_grid(system.u);
         system.reset_solution();
+        // break;
     }
 }
 
 
 int main ()
 {   
-    
+    // evaluate_loop();
+    evaluate_preconditioners();
     // std::vector<GiNaC::symbol> variables;
     // GiNaC::symbol              x_("x"), y_("y"); 
     // int GRID_SIZE = 10;
@@ -300,9 +304,6 @@ int main ()
     // // laplace.save_grid(filename, false);
     // // filename = solver.name + "_analytical_" + std::to_string(GRID_SIZE) + ".txt";
     // // laplace.save_grid(filename, true);
-
-    evaluate_loop();
-    evaluate_preconditioners();
 
     // /* ------------------------- Usage example -------------------------*/
     // // int N = 5;
