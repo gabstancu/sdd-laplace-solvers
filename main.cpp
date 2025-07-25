@@ -252,7 +252,7 @@ void evaluate_preconditioners ()
 
 int main ()
 {   
-    // evaluate_loop();
+    evaluate_loop();
     evaluate_preconditioners();
     // std::vector<GiNaC::symbol> variables;
     // GiNaC::symbol              x_("x"), y_("y"); 

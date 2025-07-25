@@ -46,3 +46,4 @@ build/
 .DS_Store
 tests/build/
 logs/
+data_analysis/
