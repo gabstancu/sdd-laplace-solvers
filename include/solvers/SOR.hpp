@@ -47,6 +47,7 @@ struct SOR
 
         for (int k = 0; k < max_iters; k++)
         {   
+            auto start = std::chrono::high_resolution_clock::now();
             for (int i = 0; i < A.rows(); i++)
             {
                 sum1 = 0; sum2 = 0;
@@ -68,13 +69,21 @@ struct SOR
             res = (A * u - b).norm() / b.norm();
             log.num_of_iterations++;
             log.res_per_iteration.push_back(res);
+
+
             if (res < tol) 
             {   
                 this->final_solution = u;
                 log.final_solution   = this->final_solution;
                 log.converged = 1;
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> elapsed = end - start;
+                log.time_per_iteration.push_back(elapsed);
                 return;
             }
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            log.time_per_iteration.push_back(elapsed);
         }
         this->final_solution = u;
         log.final_solution   = this->final_solution;

@@ -27,6 +27,7 @@ struct PCG
     template<typename System>
     void solve (System& system)
     {   
+        auto start = std::chrono::high_resolution_clock::now();
         auto& A        = system.A;
         auto& b        = system.b;
         auto& u        = system.u;
@@ -64,12 +65,19 @@ struct PCG
                 log.converged = 1;
                 this->final_solution = u;
                 log.final_solution   = this->final_solution;
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> elapsed = end - start;
+                log.time_per_iteration.push_back(elapsed);
                 return;
             }
 
             zeta        = precon.apply(r);
             double beta = r.dot(zeta) / r_prev.dot(zeta_prev);
             d           = zeta + beta * d;
+
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            log.time_per_iteration.push_back(elapsed);
         }
         this->final_solution = u;
         log.final_solution   = this->final_solution;

@@ -15,7 +15,8 @@ struct SolverLog
     int    converged         = 0;   
     int    system_dim;     
 
-    std::vector<double>           res_per_iteration = {};
+    std::vector<double>           res_per_iteration  = {};
+    std::vector<double>           time_per_iteration = {};  
     std::chrono::duration<double> time_elapsed{0};
     std::chrono::duration<double> precon_init_time{0};
     Vector                        final_solution;

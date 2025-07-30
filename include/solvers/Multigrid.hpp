@@ -36,6 +36,7 @@ struct Multigrid
 
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end - start;
+            log.time_per_iteration.push_back(elapsed);
         }
         // this->final_solution = u;
     }

@@ -43,7 +43,8 @@ struct ConjugateGradient
         Vector d = r; // initial search direction
 
         for (int k = 0; k < max_iters; k++)
-        {
+        {   
+            auto start = std::chrono::high_resolution_clock::now();
             // std::cout << "--------------------- iter. " << k+1 << " ---------------------\n";
             Vector Ad = A * d;
 
@@ -63,11 +64,18 @@ struct ConjugateGradient
                 log.converged        = 1;
                 this->final_solution = u;
                 log.final_solution   = this->final_solution;
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> elapsed = end - start;
+                log.time_per_iteration.push_back(elapsed);
                 return;
             }
 
             double beta = r.dot(r) / r_prev_dot;
             d           = r + beta * d; // update direction
+
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed = end - start;
+            log.time_per_iteration.push_back(elapsed);
         }
         this->final_solution = u;
         log.final_solution   = this->final_solution;
