@@ -13,10 +13,11 @@ struct SolverLog
     int    max_iterations    = 0;
     double tolerance;
     int    converged         = 0;   
+    int    timed_out         = 0; 
     int    system_dim;     
 
     std::vector<double>           res_per_iteration  = {};
-    std::vector<double>           time_per_iteration = {};  
+    std::vector<double>           time_per_iteration = {}; 
     std::chrono::duration<double> time_elapsed{0};
     std::chrono::duration<double> precon_init_time{0};
     Vector                        final_solution;
@@ -35,6 +36,7 @@ struct SolverLog
         std::cout << "Dim.: " << system_dim << '\n';
         std::cout << "Iterations performed: " << num_of_iterations << '\n';
         std::cout << "Converged: " <<  converged << '\n';
+        std::cout << "Timed out: " <<  timed_out << '\n';
         std::cout << "Time elapsed: " << time_elapsed.count() << " seconds\n";
     }
 
@@ -66,6 +68,7 @@ struct SolverLog
         file << "C Iterations performed: " << this->num_of_iterations << '\n';
         file << "C Time elapsed: " << this->time_elapsed.count() << '\n';
         file << "C Converged: " << this->converged << '\n';
+        file << "Timed out: " <<  timed_out << '\n';
         file << "C Residual per iteration: ";
         for (double res : this->res_per_iteration)
         {
@@ -98,6 +101,7 @@ struct SolverLog
         file << "C Iterations performed: " << this->num_of_iterations << '\n';
         file << "C Time elapsed: " << this->time_elapsed.count() << '\n';
         file << "C Converged: " << this->converged << '\n';
+        file << "Timed out: " <<  timed_out << '\n';
         file << "C Residual per iteration: ";
         for (double res : this->res_per_iteration)
         {

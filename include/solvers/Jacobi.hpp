@@ -77,6 +77,13 @@ struct Jacobi
                 return;
             }
 
+            auto now = std::chrono::high_resolution_clock::now();
+            double elapsed = std::chrono::duration<double>(now - start).count();
+            if (elapsed > TIMEOUT) {
+                log.timed_out = 1;
+                break;
+            }
+
             u = u_next; // now previous
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end - start;

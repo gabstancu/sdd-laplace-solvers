@@ -70,6 +70,13 @@ struct ConjugateGradient
                 return;
             }
 
+            auto now = std::chrono::high_resolution_clock::now();
+            double elapsed = std::chrono::duration<double>(now - start).count();
+            if (elapsed > TIMEOUT) {
+                log.timed_out = 1;
+                break;
+            }
+
             double beta = r.dot(r) / r_prev_dot;
             d           = r + beta * d; // update direction
 

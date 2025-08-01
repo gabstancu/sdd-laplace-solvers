@@ -34,6 +34,13 @@ struct Multigrid
             // log.num_of_iterations++;
             // log.res_per_iteration.push_back(r.norm() / b_norm);
 
+            auto now = std::chrono::high_resolution_clock::now();
+            double elapsed = std::chrono::duration<double>(now - start).count();
+            if (elapsed > TIMEOUT) {
+                log.timed_out = 1;
+                break;
+            }
+
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed = end - start;
             log.time_per_iteration.push_back(elapsed);
