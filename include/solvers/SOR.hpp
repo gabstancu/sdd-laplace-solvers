@@ -13,8 +13,11 @@ struct SOR
     SolverLog<Eigen::VectorXd>   log;
     Vector      final_solution;
     
-    SOR (double omega) : omega(omega)
-    {
+    template<typename System>
+    SOR (System system) : omega(system.omega_)
+    {   
+        log.system_dim     = system.A.rows();
+        max_iters          = int(10 * log.system_dim);
         log.max_iterations = max_iters;
         log.tolerance      = tol;
         log.solver_name    = name;
@@ -26,7 +29,6 @@ struct SOR
         auto& A        = system.A;
         auto& b        = system.b;
         auto& u        = system.u;
-        log.system_dim = system.A.rows();
 
         double sum1, sum2;
         double b_norm = b.norm();
@@ -44,7 +46,8 @@ struct SOR
         // Matrix U = A.triangularView<Eigen::StrictlyUpper>();
         // Matrix D = A.diagonal().asDiagonal();
         // Matrix K = (D + omega * L).inverse();
-        auto start = std::chrono::high_resolution_clock::now();
+        
+        // auto start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {   
             Vector u_prev = u;
@@ -71,9 +74,10 @@ struct SOR
 
             log.num_of_iterations++;
             log.res_per_iteration.push_back(res);
+            log.diff_per_iteration.push_back(diff);
 
 
-            if (res <= tol && diff <= tol) 
+            if (res <= tol) 
             {   
                 this->final_solution = u;
                 log.final_solution   = this->final_solution;
@@ -81,12 +85,12 @@ struct SOR
                 return;
             }
 
-            auto now = std::chrono::high_resolution_clock::now();
-            double t = std::chrono::duration<double>(now - start).count();
-            if (t > TIMEOUT) {
-                log.timed_out = 1;
-                break;
-            }
+            // auto now = std::chrono::high_resolution_clock::now();
+            // double t = std::chrono::duration<double>(now - start).count();
+            // if (t > TIMEOUT) {
+            //     log.timed_out = 1;
+            //     break;
+            // }
         }
         this->final_solution = u;
         log.final_solution   = this->final_solution;

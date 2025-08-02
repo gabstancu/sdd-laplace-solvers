@@ -15,7 +15,6 @@ struct LinearSystem
     int     N ;
     double  omega_;
 
-    
 
     template<typename Solver>
     void solve(Solver& solver)

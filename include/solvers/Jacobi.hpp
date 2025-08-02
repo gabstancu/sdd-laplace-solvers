@@ -13,9 +13,12 @@ struct Jacobi
 
     SolverLog<Eigen::VectorXd>   log;
 
-    Jacobi ()
+    template<typename System>
+    Jacobi (System system)
     {
         log.tolerance      = tol;
+        log.system_dim     = system.A.rows();
+        max_iters          = int(10 * std::pow(log.system_dim, 2));
         log.max_iterations = max_iters;
         log.solver_name    = name;
     }
@@ -26,7 +29,6 @@ struct Jacobi
         auto& A        = system.A;
         auto& b        = system.b;
         auto& u        = system.u;
-        log.system_dim = system.A.rows();
         Vector u_next  = u;
         double sum, b_norm, res;
 
@@ -41,7 +43,7 @@ struct Jacobi
             return;
         }
 
-        auto start = std::chrono::high_resolution_clock::now();
+        // auto start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {   
             // std::cout << "--------------------- iter " << k+1 << "---------------------\n";
@@ -66,8 +68,9 @@ struct Jacobi
 
             log.num_of_iterations++;
             log.res_per_iteration.push_back(res);
+            log.diff_per_iteration.push_back(diff);
             
-            if (res <= tol && diff <= tol ) 
+            if (res <= tol) 
             {   
                 log.converged = 1;
                 this->final_solution = u_next;
@@ -75,12 +78,12 @@ struct Jacobi
                 return;
             }
 
-            auto now = std::chrono::high_resolution_clock::now();
-            double t = std::chrono::duration<double>(now - start).count();
-            if (t >= TIMEOUT) {
-                log.timed_out = 1;
-                break;
-            }
+            // auto now = std::chrono::high_resolution_clock::now();
+            // double t = std::chrono::duration<double>(now - start).count();
+            // if (t >= TIMEOUT) {
+            //     log.timed_out = 1;
+            //     break;
+            // }
 
             u = u_next; // now previous
         }

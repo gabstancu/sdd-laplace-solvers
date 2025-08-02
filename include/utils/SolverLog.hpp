@@ -16,7 +16,8 @@ struct SolverLog
     int    timed_out         = 0; 
     int    system_dim;     
 
-    std::vector<double>           res_per_iteration  = {};
+    std::vector<double>           res_per_iteration   = {};
+    std::vector<double>           diff_per_iteration  = {};
     std::chrono::duration<double> time_elapsed{0};
     std::chrono::duration<double> precon_init_time{0};
     Vector                        final_solution;
@@ -74,6 +75,12 @@ struct SolverLog
             file << res << " ";
         }
         file << '\n';
+        file << "C Diff. per iteration: ";
+        for (double diff : this->diff_per_iteration)
+        {
+            file << diff << " ";
+        }
+        file << '\n';
         file << "C Final solution: ";
         for (double u_ : this->final_solution)
         {
@@ -105,6 +112,12 @@ struct SolverLog
         for (double res : this->res_per_iteration)
         {
             file << res << " ";
+        }
+        file << '\n';
+        file << "C Diff. per iteration: ";
+        for (double diff : this->diff_per_iteration)
+        {
+            file << diff << " ";
         }
         file << '\n';
         file << "C Final solution: ";

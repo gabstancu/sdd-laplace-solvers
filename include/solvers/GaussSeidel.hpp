@@ -12,9 +12,12 @@ struct GaussSeidel
     SolverLog<Eigen::VectorXd> log;
     Vector      final_solution;
 
-    GaussSeidel ()
+    template<typename System>
+    GaussSeidel (System system)
     {
         log.tolerance      = tol;
+        log.system_dim     = system.A.rows();
+        max_iters          = int(5 * std::pow(log.system_dim, 2));
         log.max_iterations = max_iters;
         log.solver_name    = name;
     }
@@ -41,7 +44,7 @@ struct GaussSeidel
             return;
         }
 
-        auto start = std::chrono::high_resolution_clock::now();
+        // auto start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {   
             Vector u_prev = u;
@@ -68,8 +71,9 @@ struct GaussSeidel
             log.res_per_iteration.push_back(res);
 
             double diff = (u - u_prev).norm() / u_prev.norm();
+            log.diff_per_iteration.push_back(diff);
 
-            if (res <= tol && diff <= tol) 
+            if (res <= tol) 
             {   
                 log.converged = 1;
                 this->final_solution = u;
@@ -77,12 +81,12 @@ struct GaussSeidel
                 return;
             }
             
-            auto now = std::chrono::high_resolution_clock::now();
-            double t = std::chrono::duration<double>(now - start).count();
-            if (t >= TIMEOUT) {
-                log.timed_out = 1;
-                break;
-            }
+            // auto now = std::chrono::high_resolution_clock::now();
+            // double t = std::chrono::duration<double>(now - start).count();
+            // if (t >= TIMEOUT) {
+            //     log.timed_out = 1;
+            //     break;
+            // }
         }
         this->final_solution = u;
         log.final_solution   = this->final_solution;

@@ -7,7 +7,7 @@ template<typename Matrix, typename Vector>
 struct ConjugateGradient
 {
     double      tol       = DEFAULT_TOL;
-    int         max_iters = MAX_ITERS;
+    int         max_iters = 1e6;
     std::string name      = "CG";
     SolverLog<Eigen::VectorXd>   log;
     Vector      final_solution;
@@ -41,7 +41,7 @@ struct ConjugateGradient
 
         Vector d = r; // initial search direction
 
-        auto start = std::chrono::high_resolution_clock::now();
+        // auto start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {   
             // std::cout << "--------------------- iter. " << k+1 << " ---------------------\n";
@@ -59,8 +59,9 @@ struct ConjugateGradient
             
             log.num_of_iterations++;
             log.res_per_iteration.push_back(r_norm / b_norm);
+            log.diff_per_iteration.push_back(diff);
 
-            if (r_norm / b_norm <= tol && diff <= tol) 
+            if (r_norm / b_norm <= tol) 
             {   
                 log.converged        = 1;
                 this->final_solution = u;
@@ -68,12 +69,12 @@ struct ConjugateGradient
                 return;
             }
 
-            auto now = std::chrono::high_resolution_clock::now();
-            double t = std::chrono::duration<double>(now - start).count();
-            if (t > TIMEOUT) {
-                log.timed_out = 1;
-                break;
-            }
+            // auto now = std::chrono::high_resolution_clock::now();
+            // double t = std::chrono::duration<double>(now - start).count();
+            // if (t > TIMEOUT) {
+            //     log.timed_out = 1;
+            //     break;
+            // }
 
             double beta = r.dot(r) / r_prev_dot;
             d           = r + beta * d; // update direction
