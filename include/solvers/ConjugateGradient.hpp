@@ -22,7 +22,6 @@ struct ConjugateGradient
     template<typename System>
     void solve(System& system)
     {   
-        auto start     = std::chrono::high_resolution_clock::now();
         auto& A        = system.A;
         auto& b        = system.b;
         auto& u        = system.u;
@@ -42,6 +41,7 @@ struct ConjugateGradient
 
         Vector d = r; // initial search direction
 
+        auto start     = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {   
             auto start = std::chrono::high_resolution_clock::now();

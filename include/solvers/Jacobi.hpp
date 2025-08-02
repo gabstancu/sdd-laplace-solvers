@@ -23,7 +23,6 @@ struct Jacobi
     template<typename System>
     void solve(System& system)
     {   
-        auto start = std::chrono::high_resolution_clock::now();
         auto& A        = system.A;
         auto& b        = system.b;
         auto& u        = system.u;
@@ -42,6 +41,7 @@ struct Jacobi
             return;
         }
 
+        auto start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {   
             // std::cout << "--------------------- iter " << k+1 << "---------------------\n";

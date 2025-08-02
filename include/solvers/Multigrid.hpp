@@ -27,10 +27,9 @@ struct Multigrid
         auto& u        = system.u;
         log.system_dim = system.A.rows();
         
+        auto start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {
-            auto start = std::chrono::high_resolution_clock::now();
-
             // log.num_of_iterations++;
             // log.res_per_iteration.push_back(r.norm() / b_norm);
 

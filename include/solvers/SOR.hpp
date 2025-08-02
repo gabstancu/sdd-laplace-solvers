@@ -44,10 +44,9 @@ struct SOR
         // Matrix U = A.triangularView<Eigen::StrictlyUpper>();
         // Matrix D = A.diagonal().asDiagonal();
         // Matrix K = (D + omega * L).inverse();
-
+        auto start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {   
-            auto start = std::chrono::high_resolution_clock::now();
             for (int i = 0; i < A.rows(); i++)
             {
                 sum1 = 0; sum2 = 0;
