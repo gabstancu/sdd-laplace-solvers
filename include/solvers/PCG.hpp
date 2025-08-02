@@ -65,15 +65,12 @@ struct PCG
                 log.converged = 1;
                 this->final_solution = u;
                 log.final_solution   = this->final_solution;
-                auto end = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> elapsed = end - start;
-                log.time_per_iteration.push_back(elapsed);
                 return;
             }
 
             auto now = std::chrono::high_resolution_clock::now();
-            double elapsed = std::chrono::duration<double>(now - start).count();
-            if (elapsed > TIMEOUT) {
+            double t = std::chrono::duration<double>(now - start).count();
+            if (t > TIMEOUT) {
                 log.timed_out = 1;
                 break;
             }
@@ -81,10 +78,6 @@ struct PCG
             zeta        = precon.apply(r);
             double beta = r.dot(zeta) / r_prev.dot(zeta_prev);
             d           = zeta + beta * d;
-
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            log.time_per_iteration.push_back(elapsed);
         }
         this->final_solution = u;
         log.final_solution   = this->final_solution;
