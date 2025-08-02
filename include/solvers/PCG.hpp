@@ -50,6 +50,7 @@ struct PCG
         {   
             // std::cout << "Iteration: " << k+1 << '\n';
             Vector Ad        = A * d;
+            Vector u_prev    = u;
             Vector r_prev    = r;
             Vector zeta_prev = zeta;
 
@@ -57,10 +58,12 @@ struct PCG
             u = u + alpha * d;
             r = r - alpha * Ad;
 
+            double diff = (u - u_prev).norm() / u_prev.norm();
+
             log.num_of_iterations++;
             log.res_per_iteration.push_back(r.norm() / b_norm);
 
-            if (r.norm() / b_norm < tol) 
+            if (r.norm() / b_norm <= tol && diff <= tol) 
             {   
                 log.converged = 1;
                 this->final_solution = u;
@@ -70,7 +73,7 @@ struct PCG
 
             auto now = std::chrono::high_resolution_clock::now();
             double t = std::chrono::duration<double>(now - start).count();
-            if (t > TIMEOUT) {
+            if (t >= TIMEOUT) {
                 log.timed_out = 1;
                 break;
             }

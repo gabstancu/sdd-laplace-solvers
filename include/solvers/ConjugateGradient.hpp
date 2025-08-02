@@ -31,7 +31,7 @@ struct ConjugateGradient
         double b_norm = b.norm();
         double r_norm = r.norm();
 
-        if (r_norm / b_norm < tol) 
+        if (r_norm / b_norm <= tol) 
         {   
             this->final_solution = u;
             log.final_solution   = this->final_solution;
@@ -41,12 +41,12 @@ struct ConjugateGradient
 
         Vector d = r; // initial search direction
 
-        auto start     = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {   
-            auto start = std::chrono::high_resolution_clock::now();
             // std::cout << "--------------------- iter. " << k+1 << " ---------------------\n";
-            Vector Ad = A * d;
+            Vector Ad     = A * d;
+            Vector u_prev = u;
 
             double alpha      = ((r.transpose() * r) / (d.transpose() * Ad)).coeff(0); // step size
             double r_prev_dot = (r.transpose() * r).coeff(0); // to calculate beta
@@ -55,11 +55,12 @@ struct ConjugateGradient
             r = r - alpha * Ad;
 
             r_norm = r.norm();
+            double diff = (u - u_prev).norm() / u_prev.norm();
             
             log.num_of_iterations++;
             log.res_per_iteration.push_back(r_norm / b_norm);
 
-            if (r_norm / b_norm < tol) 
+            if (r_norm / b_norm <= tol && diff <= tol) 
             {   
                 log.converged        = 1;
                 this->final_solution = u;

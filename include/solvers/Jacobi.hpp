@@ -33,7 +33,7 @@ struct Jacobi
         b_norm = b.norm();
         res    = (A* u - b).norm() / b_norm;
 
-        if (res < tol) 
+        if (res <= tol) 
         {   
             log.converged = 1;
             this->final_solution = u;
@@ -61,22 +61,23 @@ struct Jacobi
             // u = D_inv * (b - (L + U)*u);
 
             res = (A * u_next - b).norm() / b_norm;
+            double diff = (u_next - u).norm() / u.norm();
             // std::cout << res << '\n';
 
             log.num_of_iterations++;
             log.res_per_iteration.push_back(res);
             
-            if (res < tol) 
+            if (res <= tol && diff <= tol ) 
             {   
                 log.converged = 1;
-                this->final_solution = u;
+                this->final_solution = u_next;
                 log.final_solution   = this->final_solution;
                 return;
             }
 
             auto now = std::chrono::high_resolution_clock::now();
             double t = std::chrono::duration<double>(now - start).count();
-            if (t > TIMEOUT) {
+            if (t >= TIMEOUT) {
                 log.timed_out = 1;
                 break;
             }
