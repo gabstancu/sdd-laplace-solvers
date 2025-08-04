@@ -4,13 +4,15 @@
 #include "basis/BoundaryCondition.hpp"
 #include "basis/LinearSystem.hpp"
 
-template<typename Matrix, typename Vector>
+using SparseMatrix = Eigen::SparseMatrix<double, Eigen::RowMajor>;
+using DenseMatrix  = Eigen::MatrixXd;
+template<typename Vector>
 struct Laplace2D
 {   
-    int    GRID_SIZE;
-    Matrix grid;
-    Matrix analytical_solution;
-    double h;
+    int         GRID_SIZE;
+    DenseMatrix grid;
+    DenseMatrix analytical_solution;
+    double      h;
     
     std::pair<std::pair<double, double>, std::pair<double, double>> domain;
 
@@ -74,14 +76,17 @@ struct Laplace2D
     }
 
 
-    LinearSystem<Matrix, Vector> construct_system ()
+    LinearSystem<Vector> construct_system ()
     {   
         // std::cout << "Constructing system...\n";
-        LinearSystem<Matrix, Vector> system;
+        LinearSystem<Vector> system;
         int N    = GRID_SIZE - 2; // inner grid dimension
         int dim  = int(std::pow(N, 2));
 
-        system.A = Eigen::MatrixXd::Zero(dim, dim);
+        // Initialize sparse matrix with estimated non-zeros (5-point stencil has ~5N² non-zeros)
+        system.A.resize(dim, dim);
+        system.A.reserve(Eigen::VectorXi::Constant(dim, 5)); // Reserve 5 non-zeros per column
+        
         system.b = Eigen::VectorXd::Zero(dim);
         system.u = Eigen::VectorXd::Zero(dim);
         system.N = N;
@@ -93,34 +98,35 @@ struct Laplace2D
             for (int j = 1; j <= N; j++)
             {
                 k = (i - 1) * N + (j - 1);
-                // printf("k: %d i: %d j: %d\n", k, i, j);
-
-                system.A(k, k) = 4.0;
+                
+                // Insert diagonal element
+                system.A.insert(k, k) = 4.0;
 
                 if (i == N) // top neighbor
                     system.b(k) += grid(i + 1, j);
                 else
-                    system.A(k, k + N) = -1.0;
+                    system.A.insert(k, k + N) = -1.0;
 
                 if (i == 1) // bottom neighbor
                     system.b(k) += grid(i - 1, j);
-                // if (i == 1) 
-                //     system.b(k) += grid(i + 1, j);
                 else
-                    system.A(k, k - N) = -1.0;
+                    system.A.insert(k, k - N) = -1.0;
 
                 if (j == N) // right neighbor
-                    system.b(k) += grid(i, j + 1) ;
+                    system.b(k) += grid(i, j + 1);
                 else
-                    system.A(k, k + 1) = -1.0;
-
+                    system.A.insert(k, k + 1) = -1.0;
 
                 if (j == 1) // left neighbor
                     system.b(k) += grid(i, j - 1);
                 else
-                    system.A(k, k - 1) = -1.0;
+                    system.A.insert(k, k - 1) = -1.0;
             }
         }
+        
+        // Compress the sparse matrix for efficient computation
+        system.A.makeCompressed();
+        
         return system;
     }
 

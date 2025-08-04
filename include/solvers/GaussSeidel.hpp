@@ -3,21 +3,24 @@
 
 #include "utils/SolverLog.hpp"
 #include "solvers/config.h"
-template<typename Matrix, typename Vector>
+template<typename Vector>
 struct GaussSeidel
-{
-    double      tol          = DEFAULT_TOL;
-    int         max_iters    = MAX_ITERS;
-    std::string name         = "Gauss-Seidel";
-    SolverLog<Eigen::VectorXd> log;
-    Vector      final_solution;
+{   
+    using Scalar       = typename Vector::Scalar;
+    using SparseMatrix = Eigen::SparseMatrix<Scalar, Eigen::RowMajor>;
+
+    double            tol          = DEFAULT_TOL;
+    int               max_iters    = MAX_ITERS;
+    std::string       name         = "Gauss-Seidel";
+    SolverLog<Vector> log;
+    Vector            final_solution;
 
     template<typename System>
     GaussSeidel (System system)
     {
         log.tolerance      = tol;
         log.system_dim     = system.A.rows();
-        max_iters          = int(std::min(int(std::pow(log.system_dim, 1)), 50000));
+        max_iters          = static_cast<int>(std::min(int(std::pow(log.system_dim, 1)), 50000));
         log.max_iterations = max_iters;
         log.solver_name    = name;
     }
@@ -25,17 +28,16 @@ struct GaussSeidel
     template<typename System>
     void solve(System& system)
     {   
-        auto& A        = system.A;
-        auto& b        = system.b;
-        auto& u        = system.u;
+        const auto& A        = system.A;
+        const auto& b        = system.b;
+              auto& u        = system.u;
+
         log.system_dim = system.A.rows();
         
         std::cout << "max_iters: " << max_iters << '\n';
 
         double sum1,   sum2;
         double b_norm, r_norm, res;
-
-        Vector inv_diag = A.diagonal().cwiseInverse();
 
         b_norm = b.norm();
         res    = (A * u - b).norm() / b_norm;
@@ -48,21 +50,39 @@ struct GaussSeidel
             return;
         }
 
+        Vector inv_diag = A.diagonal().cwiseInverse();
+
         for (int k = 0; k < max_iters; k++)
         {   
-            for (int i = 0; i < A.rows(); i++)
-            {   
-                sum1 = 0; sum2 = 0;
-                for (int j = 0; j < i; j++)
-                {
-                    sum1 += A(i, j) * u[j];
-                }
-
-                for (int j = i+1; j < A.rows(); j++)
+            for (int i = 0; i < A.rows(); ++i)
+            {
+                double sum = 0;
+                
+                for (typename SparseMatrix::InnerIterator it(A, i); it; ++it)
                 {   
-                    sum2 += A(i, j) * u[j];
+                    int j = it.col();
+                    if (j != i)
+                    {
+                        sum += it.value() * u[it.col()];
+                    }
                 }
-                u[i] = inv_diag[i] * (b[i] - sum1 - sum2);
+                // /* for clarity... */
+                // double sum1 = 0, sum2 = 0;
+                
+                // for (typename SparseMatrix::InnerIterator it(A, i); it; ++it)
+                // {   
+                //     int j = it.col();
+                //     if (j < i)
+                //     {
+                //         sum1 += it.value() * u[j];
+                //     }
+                //     else if (j > i)
+                //     {
+                //         sum2 += it.value() * u[j];
+                //     }
+                // }
+
+                u[i] = inv_diag[i] * (b[i] - sum);
             }
 
             res = (A * u - b).norm() / b_norm;

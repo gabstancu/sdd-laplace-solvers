@@ -3,21 +3,24 @@
 
 #include "utils/SolverLog.hpp"
 #include "solvers/config.h"
-template<typename Matrix, typename Vector>
+template<typename Vector>
 struct SOR
-{
-    double      tol       = DEFAULT_TOL;
-    int         max_iters = MAX_ITERS;
-    double      omega;
-    std::string name      = "SOR";
-    SolverLog<Eigen::VectorXd>   log;
-    Vector      final_solution;
+{   
+    using Scalar       = typename Vector::Scalar;
+    using SparseMatrix = Eigen::SparseMatrix<Scalar, Eigen::RowMajor>;
+
+    double              tol       = DEFAULT_TOL;
+    int                 max_iters = MAX_ITERS;
+    double              omega;
+    std::string         name      = "SOR";
+    SolverLog<Vector>   log;
+    Vector              final_solution;
     
     template<typename System>
     SOR (System system) : omega(system.omega_)
     {   
         log.system_dim     = system.A.rows();
-        max_iters          = int(10 * std::sqrt(log.system_dim));
+        max_iters          = static_cast<int>(10 * std::sqrt(log.system_dim));
         log.max_iterations = max_iters;
         log.tolerance      = tol;
         log.solver_name    = name;
@@ -26,14 +29,14 @@ struct SOR
     template<typename System>
     void solve(System& system)
     {   
-        auto& A        = system.A;
-        auto& b        = system.b;
-        auto& u        = system.u;
+        const auto& A        = system.A;
+        const auto& b        = system.b;
+              auto& u        = system.u;
 
         std::cout << "max_iters: " << max_iters << '\n';
 
         double sum1, sum2;
-        Vector inv_diag = A.diagonal().cwiseInverse();
+        
         double b_norm   = b.norm();
         double res      = (A * u - b).norm() / b_norm;
 
@@ -45,28 +48,30 @@ struct SOR
             return;
         }
 
+        Vector inv_diag = A.diagonal().cwiseInverse();
+
         for (int k = 0; k < max_iters; k++)
         {   
-            for (int i = 0; i < A.rows(); i++)
-            {
-                sum1 = 0.0; sum2 = 0.0;
-                for (int j = 0; j < i; j++)
-                {
-                    sum1 += A(i, j) * u[j];
-                }
+            for (int i = 0; i < A.rows(); ++i)
+            {   
+                double sum = 0;
 
-                for (int j = i+1; j < A.rows(); j++)
+                for (typename SparseMatrix::InnerIterator it(A, i); it; ++it)
                 {
-                    sum2 += A(i, j) * u[j];
+                    int j = it.col();
+
+                    if (j != i)
+                    {
+                        sum += it.value() * u[j];
+                    }
                 }
-                u[i] = (1 - omega) * u[i] + omega * (inv_diag[i] * (b[i] - sum1 - sum2));
+                u[i] = (1 - omega) * u[i] + omega * (inv_diag[i] * (b[i] - sum));
             }
              
             res = (A * u - b).norm() / b.norm();
 
             log.num_of_iterations++;
             log.res_per_iteration.push_back(res);
-
 
             if (res <= tol) 
             {   

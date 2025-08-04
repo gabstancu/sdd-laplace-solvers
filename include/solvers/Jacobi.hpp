@@ -3,22 +3,25 @@
 
 #include "utils/SolverLog.hpp"
 #include "solvers/config.h"
-template<typename Matrix, typename Vector>
+template<typename Vector>
 struct Jacobi
 {
-    double      tol             = DEFAULT_TOL;
-    int         max_iters       = MAX_ITERS;
-    std::string name            = "Jacobi";
-    Vector      final_solution;
+    using Scalar      = typename Vector::Scalar;
+    using SparseMatrix = Eigen::SparseMatrix<Scalar, Eigen::RowMajor>;
 
-    SolverLog<Eigen::VectorXd>   log;
+
+    double              tol             = DEFAULT_TOL;
+    int                 max_iters       = MAX_ITERS;
+    std::string         name            = "Jacobi";
+    Vector              final_solution;
+    SolverLog<Vector>   log;
 
     template<typename System>
     Jacobi (System system)
     {
         log.tolerance      = tol;
         log.system_dim     = system.A.rows();
-        max_iters          = int(std::min(int(2 * std::pow(log.system_dim, 1)), 50000));
+        max_iters          = static_cast<int>(std::min(int(2 * std::pow(log.system_dim, 1)), 50000));
         log.max_iterations = max_iters;
         log.solver_name    = name;
     }
@@ -29,12 +32,12 @@ struct Jacobi
         auto& A        = system.A;
         auto& b        = system.b;
         auto& u        = system.u;
+
         Vector u_next(u.size());
         double sum, b_norm, res;
 
         std::cout << "max_iters: " << max_iters << '\n';
 
-        Vector inv_diag = A.diagonal().cwiseInverse();
         b_norm = b.norm();
         res    = (A * u - b).norm() / b_norm;
 
@@ -46,15 +49,21 @@ struct Jacobi
             return;
         }
 
+        Vector inv_diag = A.diagonal().cwiseInverse();
+
         for (int k = 0; k < max_iters; k++)
-        {   
-            for (int i = 0; i < A.rows(); i++)
-            {   
-                sum = 0.0;
-                for (int j = 0; j < A.cols(); j++)
-                {   
-                    if (i!=j) 
-                        sum += A(i, j) * u[j];
+        {  
+            for (int i = 0; i < A.rows(); ++i)
+            {
+                double sum = 0;
+
+                for (typename SparseMatrix::InnerIterator it(A, i); it; ++it)
+                {
+                    int j = it.col();
+                    if (j != i)
+                    {
+                        sum += it.value() * u[j];
+                    }
                 }
                 u_next[i] = inv_diag[i] * (b[i] - sum);
             }

@@ -5,15 +5,17 @@
 #include "utils/helper.hpp"
 #include <fstream>
 
-template<typename Matrix, typename Vector>
+using SparseMatrix = Eigen::SparseMatrix<double, Eigen::RowMajor>;
+
+template<typename Vector>
 struct LinearSystem
 {
-    Matrix  A;
-    Vector  b;
-    Vector  u; 
-    Vector _u_; // direct solution
-    int     N ;
-    double  omega_;
+    SparseMatrix A;
+    Vector       b;
+    Vector       u; 
+    Vector      _u_; // direct solution
+    int          N;
+    double       omega_;
 
 
     template<typename Solver>
@@ -26,13 +28,17 @@ struct LinearSystem
         solver.log.time_elapsed = elapsed;
     }
 
-    void solve_directly (bool log)
+    void solve_directly(bool log)
     {
-        // this->_u_ = A.llt().solve(this->b);
-        this->_u_ = A.lu().solve(this->b);
+        // Using sparse direct solver
+        Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+        solver.compute(this->A);
+        if(solver.info() != Eigen::Success) {
+            throw std::runtime_error("Sparse decomposition failed");
+        }
+        this->_u_ = solver.solve(this->b);
 
-        if (!log)
-            return;
+        if (!log) return;
 
         #ifdef TESTING_MODE
         std::cout << "[TEST] Skipping file logging.\n";

@@ -4,22 +4,24 @@
 #include "basis/Preconditioners.hpp"
 #include "utils/SolverLog.hpp"
 #include "solvers/config.h"
-template<typename Matrix, typename Vector, typename Precondition>
+template<typename Vector, typename Precondition>
 struct PCG
 {
-    double        tol        = DEFAULT_TOL;
-    int           max_iters  = 1e6;
-    std::string   name       = "PCG";
-    Precondition& precon;
-    std::string   precon_name;
-    SolverLog<Eigen::VectorXd>   log;
-    Vector        final_solution;
+    using Scalar       = typename Vector::Scalar;
+    using SparseMatrix = Eigen::SparseMatrix<Scalar, Eigen::RowMajor>;
+
+    double              tol        = DEFAULT_TOL;
+    int                 max_iters  = 1e6;
+    std::string         name       = "PCG";
+    Precondition&       precon;
+    std::string         precon_name;
+    SolverLog<Vector>   log;
+    Vector              final_solution;
     
-    PCG (Precondition& p, std::string precon_name) : precon(p) 
+    PCG (Precondition& p, std::string precon_name) : precon(p) , precon_name(precon_name)
     {
         log.tolerance      = tol;
         log.max_iterations = max_iters;
-        this->precon_name  = precon_name;
         log.solver_name    = name;
         log.precon_name    = precon_name; 
     };
@@ -27,18 +29,22 @@ struct PCG
     template<typename System>
     void solve (System& system)
     {   
-        auto& A        = system.A;
-        auto& b        = system.b;
-        auto& u        = system.u;
-        log.system_dim = system.A.rows();
+        const auto& A        = system.A;
+        const auto& b        = system.b;
+              auto& u        = system.u;
+        log.system_dim       = system.A.rows();
 
         std::cout << "max_iters: " << max_iters << '\n';
 
-        Vector r       = b - A * u;
-        Vector zeta    = precon.apply(r);
-        Vector d       = zeta;
+        Vector r(b.size()), zeta(b.size()), d(b.size());
+        Vector Ad(A.rows());
+
+        r.noalias()       = b - A * u;
+        zeta.noalias()    = precon.apply(r);
+        d.noalias()       = zeta;
 
         double b_norm = b.norm();
+
         if (r.norm() / b_norm < tol) 
         {   
             log.converged = 1;
@@ -51,14 +57,13 @@ struct PCG
         for (int k = 0; k < max_iters; k++)
         {   
             // std::cout << "Iteration: " << k+1 << '\n';
-            Vector Ad        = A * d;
-            Vector u_prev    = u;
-            Vector r_prev    = r;
-            Vector zeta_prev = zeta;
+            Ad.noalias()        = A * d;
+            Vector r_prev       = r;
+            Vector zeta_prev    = zeta;
 
             double alpha = r.dot(zeta) / d.dot(Ad);
-            u = u + alpha * d;
-            r = r - alpha * Ad;
+            u.noalias() += alpha * d;
+            r.noalias() -= alpha * Ad;
 
             log.num_of_iterations++;
             log.res_per_iteration.push_back(r.norm() / b_norm);
@@ -71,9 +76,9 @@ struct PCG
                 return;
             }
 
-            zeta        = precon.apply(r);
-            double beta = r.dot(zeta) / r_prev.dot(zeta_prev);
-            d           = zeta + beta * d;
+            zeta.noalias()        = precon.apply(r);
+            double beta           = r.dot(zeta) / r_prev.dot(zeta_prev);
+            d.noalias()           = zeta + beta * d;
         }
         this->final_solution = u;
         log.final_solution   = this->final_solution;

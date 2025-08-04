@@ -3,14 +3,14 @@
 
 #include "utils/SolverLog.hpp"
 #include "solvers/config.h"
-template<typename Matrix, typename Vector>
+template< typename Vector>
 struct ConjugateGradient
 {
-    double      tol       = DEFAULT_TOL;
-    int         max_iters = 1e6;
-    std::string name      = "CG";
-    SolverLog<Eigen::VectorXd>   log;
-    Vector      final_solution;
+    double              tol       = DEFAULT_TOL;
+    int                 max_iters = 1e6;
+    std::string         name      = "CG";
+    SolverLog<Vector>   log;
+    Vector              final_solution;
 
     ConjugateGradient ()
     {
@@ -22,10 +22,10 @@ struct ConjugateGradient
     template<typename System>
     void solve(System& system)
     {   
-        auto& A        = system.A;
-        auto& b        = system.b;
-        auto& u        = system.u;
-        log.system_dim = system.A.rows();
+        const auto&  A = system.A;
+        const auto&  b = system.b;
+        auto&        u = system.u;
+        log.system_dim = A.rows();
 
         std::cout << "max_iters: " << max_iters << '\n';
 
@@ -42,19 +42,18 @@ struct ConjugateGradient
         }
 
         Vector d = r; // initial search direction
+        Vector Ad(A.rows());
 
-        // auto start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {   
             // std::cout << "--------------------- iter. " << k+1 << " ---------------------\n";
-            Vector Ad     = A * d;
-            Vector u_prev = u;
+            Ad.noalias() = A * d;
 
             double alpha      = ((r.transpose() * r) / (d.transpose() * Ad)).coeff(0); // step size
             double r_prev_dot = (r.transpose() * r).coeff(0); // to calculate beta
 
-            u = u + alpha * d;
-            r = r - alpha * Ad;
+            u.noalias() += alpha * d;
+            r.noalias() -= alpha * Ad;
 
             r_norm = r.norm();
             
