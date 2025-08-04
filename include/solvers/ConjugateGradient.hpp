@@ -27,6 +27,8 @@ struct ConjugateGradient
         auto& u        = system.u;
         log.system_dim = system.A.rows();
 
+        std::cout << "max_iters: " << max_iters << '\n';
+
         Vector r      = b - A * u; // initial residual
         double b_norm = b.norm();
         double r_norm = r.norm();
@@ -55,7 +57,7 @@ struct ConjugateGradient
             r = r - alpha * Ad;
 
             r_norm = r.norm();
-            double diff = (u - u_prev).norm() / u_prev.norm();
+            double diff = (u - u_prev).norm() / u.norm();
             
             log.num_of_iterations++;
             log.res_per_iteration.push_back(r_norm / b_norm);

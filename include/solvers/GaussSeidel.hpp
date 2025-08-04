@@ -17,7 +17,7 @@ struct GaussSeidel
     {
         log.tolerance      = tol;
         log.system_dim     = system.A.rows();
-        max_iters          = int(5 * std::pow(log.system_dim, 2));
+        max_iters          = int(std::min(int(std::pow(log.system_dim, 1)), 50000));
         log.max_iterations = max_iters;
         log.solver_name    = name;
     }
@@ -29,9 +29,13 @@ struct GaussSeidel
         auto& b        = system.b;
         auto& u        = system.u;
         log.system_dim = system.A.rows();
+        
+        std::cout << "max_iters: " << max_iters << '\n';
 
         double sum1,   sum2;
         double b_norm, r_norm, res;
+
+        Vector inv_diag = A.diagonal().cwiseInverse();
 
         b_norm = b.norm();
         res    = (A * u - b).norm() / b_norm;
@@ -44,34 +48,26 @@ struct GaussSeidel
             return;
         }
 
-        // auto start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {   
-            Vector u_prev = u;
             for (int i = 0; i < A.rows(); i++)
             {   
                 sum1 = 0; sum2 = 0;
                 for (int j = 0; j < i; j++)
                 {
-                    sum1 += A(i, j) * u(j);
+                    sum1 += A(i, j) * u[j];
                 }
 
                 for (int j = i+1; j < A.rows(); j++)
                 {   
-                    sum2 += A(i, j) * u(j);
+                    sum2 += A(i, j) * u[j];
                 }
-                u(i) = (1 / A(i, i)) * (b(i) - sum1 - sum2);
+                u[i] = inv_diag[i] * (b[i] - sum1 - sum2);
             }
-
-            /* ----------- matrix based ----------- */
-            // u = L_inv * (b - U * u);
 
             res = (A * u - b).norm() / b_norm;
             log.num_of_iterations++;
             log.res_per_iteration.push_back(res);
-
-            double diff = (u - u_prev).norm() / u_prev.norm();
-            log.diff_per_iteration.push_back(diff);
 
             if (res <= tol) 
             {   
@@ -80,13 +76,6 @@ struct GaussSeidel
                 log.final_solution   = this->final_solution;
                 return;
             }
-            
-            // auto now = std::chrono::high_resolution_clock::now();
-            // double t = std::chrono::duration<double>(now - start).count();
-            // if (t >= TIMEOUT) {
-            //     log.timed_out = 1;
-            //     break;
-            // }
         }
         this->final_solution = u;
         log.final_solution   = this->final_solution;

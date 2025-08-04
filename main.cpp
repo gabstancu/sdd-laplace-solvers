@@ -52,7 +52,6 @@ void evaluate_loop ()
         double omega_ = system.calc_omega_();
         std::cout << "omega_: " << omega_ << '\n';
 
-
         ConjugateGradient<Eigen::MatrixXd, Eigen::VectorXd> CG;
         std::cout << "----------------------- " << CG.name << " -----------------------\n";
 
@@ -83,7 +82,7 @@ void evaluate_loop ()
         laplace.fill_grid(system.u);
         system.reset_solution();
 
-        GaussSeidel<Eigen::MatrixXd, Eigen::VectorXd> GS(system);
+        GaussSeidel<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, Eigen::VectorXd> GS(system);
         std::cout << "----------------------- " << GS.name << " -----------------------\n";
 
         log_path = get_current_working_directory() + "/capstone/eval_results/" + GS.name +"/";
@@ -97,7 +96,7 @@ void evaluate_loop ()
         laplace.fill_grid(system.u);
         system.reset_solution();
 
-        Jacobi<Eigen::MatrixXd, Eigen::VectorXd> Jacobi(system);
+        Jacobi<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>, Eigen::VectorXd> Jacobi(system);
         std::cout << "----------------------- " << Jacobi.name << " -----------------------\n";
 
         log_path = get_current_working_directory() + "/capstone/eval_results/" + Jacobi.name +"/";
@@ -111,7 +110,7 @@ void evaluate_loop ()
         laplace.fill_grid(system.u);
         system.reset_solution();
 
-        SOR<Eigen::MatrixXd, Eigen::VectorXd> SOR(system);
+        SOR<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor>, Eigen::VectorXd> SOR(system);
         std::cout << "----------------------- " << SOR.name << " -----------------------\n";
 
         log_path = get_current_working_directory() + "/capstone/eval_results/" + SOR.name +"/";

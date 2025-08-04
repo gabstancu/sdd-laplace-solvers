@@ -18,7 +18,7 @@ struct Jacobi
     {
         log.tolerance      = tol;
         log.system_dim     = system.A.rows();
-        max_iters          = int(10 * std::pow(log.system_dim, 2));
+        max_iters          = int(std::min(int(2 * std::pow(log.system_dim, 1)), 50000));
         log.max_iterations = max_iters;
         log.solver_name    = name;
     }
@@ -29,11 +29,14 @@ struct Jacobi
         auto& A        = system.A;
         auto& b        = system.b;
         auto& u        = system.u;
-        Vector u_next  = u;
+        Vector u_next(u.size());
         double sum, b_norm, res;
 
+        std::cout << "max_iters: " << max_iters << '\n';
+
+        Vector inv_diag = A.diagonal().cwiseInverse();
         b_norm = b.norm();
-        res    = (A* u - b).norm() / b_norm;
+        res    = (A * u - b).norm() / b_norm;
 
         if (res <= tol) 
         {   
@@ -43,32 +46,23 @@ struct Jacobi
             return;
         }
 
-        // auto start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < max_iters; k++)
         {   
-            // std::cout << "--------------------- iter " << k+1 << "---------------------\n";
             for (int i = 0; i < A.rows(); i++)
             {   
-                sum = 0;
+                sum = 0.0;
                 for (int j = 0; j < A.cols(); j++)
                 {   
-                    if (i==j) 
-                        continue;
-                    sum += A(i, j) * u(j);
+                    if (i!=j) 
+                        sum += A(i, j) * u[j];
                 }
-                u_next(i) = (1 / A(i, i)) * (b(i) - sum);
+                u_next[i] = inv_diag[i] * (b[i] - sum);
             }
 
-            /* ----------- Matrix based ----------- */
-            // u = D_inv * (b - (L + U)*u);
-
             res = (A * u_next - b).norm() / b_norm;
-            double diff = (u_next - u).norm() / u.norm();
-            // std::cout << res << '\n';
 
             log.num_of_iterations++;
             log.res_per_iteration.push_back(res);
-            log.diff_per_iteration.push_back(diff);
             
             if (res <= tol) 
             {   
@@ -78,14 +72,7 @@ struct Jacobi
                 return;
             }
 
-            // auto now = std::chrono::high_resolution_clock::now();
-            // double t = std::chrono::duration<double>(now - start).count();
-            // if (t >= TIMEOUT) {
-            //     log.timed_out = 1;
-            //     break;
-            // }
-
-            u = u_next; // now previous
+            u.swap(u_next); // now previous
         }
         this->final_solution = u;
         log.final_solution   = this->final_solution;

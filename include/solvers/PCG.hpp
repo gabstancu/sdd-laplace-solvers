@@ -32,6 +32,8 @@ struct PCG
         auto& u        = system.u;
         log.system_dim = system.A.rows();
 
+        std::cout << "max_iters: " << max_iters << '\n';
+
         Vector r       = b - A * u;
         Vector zeta    = precon.apply(r);
         Vector d       = zeta;
@@ -58,7 +60,7 @@ struct PCG
             u = u + alpha * d;
             r = r - alpha * Ad;
 
-            double diff = (u - u_prev).norm() / u_prev.norm();
+            double diff = (u - u_prev).norm() / u.norm();
 
             log.num_of_iterations++;
             log.res_per_iteration.push_back(r.norm() / b_norm);
