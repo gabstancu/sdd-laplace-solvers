@@ -251,41 +251,43 @@ void evaluate_preconditioners ()
 
 int main ()
 {   
-    evaluate_loop();
-    evaluate_preconditioners();
-    // std::vector<GiNaC::symbol> variables;
-    // GiNaC::symbol              x_("x"), y_("y"); 
-    // int GRID_SIZE = 10;
+    // evaluate_loop();
+    // evaluate_preconditioners();
 
-    // variables.push_back(x_); 
-    // variables.push_back(y_);
-    // std::pair<std::pair<double, double>, std::pair<double, double>> domain;
-    // domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
 
-    // GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi);
-    // GiNaC::ex bottom = 0;
-    // double left      = 0;
-    // double right     = 0;
-    // // double left      = 4;
-    // // double right     = 5;
+    std::vector<GiNaC::symbol> variables;
+    GiNaC::symbol              x_("x"), y_("y"); 
+    int GRID_SIZE = 10;
 
-    // GiNaC::ex analytical_solution = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi * y_);
+    variables.push_back(x_); 
+    variables.push_back(y_);
+    std::pair<std::pair<double, double>, std::pair<double, double>> domain;
+    domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
 
-    // Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(GRID_SIZE, variables, domain);
-    // laplace.bc.top.expr    = top;
-    // laplace.bc.bottom.expr = bottom;
-    // laplace.bc.left.expr   = left;
-    // laplace.bc.right.expr  = right;
-    // laplace.initialise_grid();
-    // laplace.analytical_expression = analytical_solution;
+    GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi);
+    GiNaC::ex bottom = 0;
+    double left      = 0;
+    double right     = 0;
+    // double left      = 4;
+    // double right     = 5;
 
-    // // std::cout << laplace.grid << "\n\n";
+    GiNaC::ex analytical_solution = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi * y_);
 
-    // laplace.evaluate_analytical_solution();
+    Laplace2D<Eigen::MatrixXd, Eigen::VectorXd> laplace(GRID_SIZE, variables, domain);
+    laplace.bc.top.expr    = top;
+    laplace.bc.bottom.expr = bottom;
+    laplace.bc.left.expr   = left;
+    laplace.bc.right.expr  = right;
+    laplace.initialise_grid();
+    laplace.analytical_expression = analytical_solution;
+
+    // std::cout << laplace.grid << "\n\n";
+
+    laplace.evaluate_analytical_solution();
     // // std::cout << laplace.analytical_solution << "\n\n";
 
-    // LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
-    // double omega_ = system.calc_omega_();
+    LinearSystem<Eigen::MatrixXd, Eigen::VectorXd> system = laplace.construct_system();
+    double omega_ = system.calc_omega_();
 
     // // std::cout << laplace.grid << "\n";
     // // std::cout << "Coefficient matrix:\n" << system.A << "\n";
