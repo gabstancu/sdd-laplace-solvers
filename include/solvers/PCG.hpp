@@ -60,26 +60,16 @@ struct PCG
             u = u + alpha * d;
             r = r - alpha * Ad;
 
-            double diff = (u - u_prev).norm() / u.norm();
-
             log.num_of_iterations++;
             log.res_per_iteration.push_back(r.norm() / b_norm);
-            log.diff_per_iteration.push_back(diff);
 
-            if (r.norm() / b_norm <= tol || diff <= tol) 
+            if (r.norm() / b_norm <= tol) 
             {   
                 log.converged = 1;
                 this->final_solution = u;
                 log.final_solution   = this->final_solution;
                 return;
             }
-
-            // auto now = std::chrono::high_resolution_clock::now();
-            // double t = std::chrono::duration<double>(now - start).count();
-            // if (t >= TIMEOUT) {
-            //     log.timed_out = 1;
-            //     break;
-            // }
 
             zeta        = precon.apply(r);
             double beta = r.dot(zeta) / r_prev.dot(zeta_prev);

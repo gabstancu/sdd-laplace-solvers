@@ -57,11 +57,9 @@ struct ConjugateGradient
             r = r - alpha * Ad;
 
             r_norm = r.norm();
-            double diff = (u - u_prev).norm() / u.norm();
             
             log.num_of_iterations++;
             log.res_per_iteration.push_back(r_norm / b_norm);
-            log.diff_per_iteration.push_back(diff);
 
             if (r_norm / b_norm <= tol) 
             {   
@@ -70,13 +68,6 @@ struct ConjugateGradient
                 log.final_solution   = this->final_solution;
                 return;
             }
-
-            // auto now = std::chrono::high_resolution_clock::now();
-            // double t = std::chrono::duration<double>(now - start).count();
-            // if (t > TIMEOUT) {
-            //     log.timed_out = 1;
-            //     break;
-            // }
 
             double beta = r.dot(r) / r_prev_dot;
             d           = r + beta * d; // update direction
