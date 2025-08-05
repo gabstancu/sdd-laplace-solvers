@@ -48,7 +48,7 @@ struct SSORPreconditioner
         SparseMatrix Ltmp(A.rows(), A.cols());
         Ltmp.reserve(A.nonZeros());
         
-        for(int k=0; k<A.outerSize(); ++k) 
+        for(int k = 0; k < A.outerSize(); ++k) 
         {
             for(SparseMatrix::InnerIterator it(A,k); it; ++it) 
             {
@@ -63,7 +63,7 @@ struct SSORPreconditioner
             }
         }
         
-        L = Ltmp;
+        L  = Ltmp;
         LT = L.transpose();
     }
 
@@ -77,50 +77,84 @@ struct SSORPreconditioner
 };
 
 
-// template<typename Vector>
-// struct IncompleteCholeskyPreconditioner 
-// {
-//     Eigen::IncompleteCholesky<double> ichol;
-
-//     IncompleteCholeskyPreconditioner(Matrix& A) 
-//     {
-//         ichol.compute(A);
-//     }
-
-//     // Explicitly delete copy constructor/assignment
-//     IncompleteCholeskyPreconditioner(const IncompleteCholeskyPreconditioner&) = delete;
-//     IncompleteCholeskyPreconditioner& operator=(const IncompleteCholeskyPreconditioner&) = delete;
-
-//     // Default move constructor/assignment
-//     IncompleteCholeskyPreconditioner(IncompleteCholeskyPreconditioner&&) = default;
-//     IncompleteCholeskyPreconditioner& operator=(IncompleteCholeskyPreconditioner&&) = default;
-
-//     Vector apply(Vector r) 
-//     {
-//         return ichol.solve(r);
-//     }
-// };
 template<typename Vector>
 struct IncompleteCholeskyPreconditioner 
-{
-    Eigen::IncompleteCholesky<double> ichol;
+{   
 
-    IncompleteCholeskyPreconditioner(const SparseMatrix& A) 
+    using Scalar       = typename Vector::Scalar;
+    using Triplet      = Eigen::Triplet<Scalar>;
+
+    SparseMatrix L; // lower triangular factor
+
+    IncompleteCholeskyPreconditioner(const SparseMatrix&  A) 
     {
-        // Convert to column-major if needed
-        if(A.IsRowMajor) {
-            SparseMatrix colA = A;
-            ichol.compute(colA);
+        int n = A.rows();
+        L.resize(n, n);
+
+        std::vector<Triplet> triplets;
+        triplets.reserve(A.nonZeros() / 2 + n);
+
+        for (int i = 0; i < A.rows(); ++i)
+        {
+            for (typename SparseMatrix::InnerIterator it(A, i); it; ++it)
+            {
+                int j = it.col();
+
+                if (i >= j)
+                {
+                    triplets.emplace_back(i, j, it.value());
+                }
+            }
         }
-        else {
-            ichol.compute(A);
+        L.setFromTriplets(triplets.begin(), triplets.end());
+
+        // IC(0) factorisation, no fill-in
+        for (int j = 0; j < n; ++j) {
+            // Diagonal entry
+            Scalar& L_jj = L.coeffRef(j, j);
+            L_jj = std::sqrt(L_jj);
+
+            // Update column j
+            for (int i = j + 1; i < n; ++i) {
+                if (L.coeff(i, j) != 0) 
+                {
+                    L.coeffRef(i, j) /= L_jj;
+                }
+            }
+
+            // Update remaining submatrix
+            for (int k = j + 1; k < n; ++k) {
+                if (L.coeff(k, j) != 0) 
+                {
+                    const Scalar L_kj = L.coeff(k, j);
+                    for (typename SparseMatrix::InnerIterator it(L, k); it && it.col() <= j; ++it) 
+                    {
+                        const int i = it.col();
+                        if (i == j) 
+                        {
+                            it.valueRef() -= L_kj * L_kj;
+                        }
+                    }
+                }
+            }
         }
     }
 
-    Vector apply(Vector r) 
+
+    Vector apply(const Vector& r) const 
     {
-        return ichol.solve(r);
+        Vector y = L.triangularView<Eigen::Lower>().solve(r);
+        return L.transpose().template triangularView<Eigen::Upper>().solve(y);
     }
+
+
+    // Explicitly delete copy constructor/assignment
+    IncompleteCholeskyPreconditioner(const IncompleteCholeskyPreconditioner&) = delete;
+    IncompleteCholeskyPreconditioner& operator=(const IncompleteCholeskyPreconditioner&) = delete;
+
+    // Default move constructor/assignment
+    IncompleteCholeskyPreconditioner(IncompleteCholeskyPreconditioner&&) = default;
+    IncompleteCholeskyPreconditioner& operator=(IncompleteCholeskyPreconditioner&&) = default;
 };
 
 

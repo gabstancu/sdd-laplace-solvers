@@ -251,7 +251,7 @@ void evaluate_preconditioners ()
 
 int main ()
 {   
-    evaluate_loop();
+    // evaluate_loop();
     evaluate_preconditioners();
 
 
