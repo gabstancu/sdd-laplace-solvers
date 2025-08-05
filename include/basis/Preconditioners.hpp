@@ -9,7 +9,7 @@ using SparseMatrix = Eigen::SparseMatrix<double, Eigen::RowMajor>;
 template<typename Vector>
 struct IdentityPreconditioner
 {
-    Vector apply(Vector r)
+    Vector apply(Vector& r)
     { 
         return r; 
     }
@@ -25,7 +25,7 @@ struct DiagonalPreconditioner
         M = A.diagonal().cwiseInverse(); 
     }
 
-    Vector apply (Vector r) 
+    Vector apply (Vector& r) 
     { 
         return M.cwiseProduct(r); 
     }
@@ -67,7 +67,7 @@ struct SSORPreconditioner
         LT = L.transpose();
     }
 
-    Vector apply(Vector r) 
+    Vector apply(Vector& r) 
     {
         Vector y = L.triangularView<Eigen::Lower>().solve(r);
         y = Dinv * y;
@@ -138,23 +138,15 @@ struct IncompleteCholeskyPreconditioner
                 }
             }
         }
+        L.makeCompressed();
     }
 
 
     Vector apply(const Vector& r) const 
     {
-        Vector y = L.triangularView<Eigen::Lower>().solve(r);
+        Vector y = L.template triangularView<Eigen::Lower>().solve(r);
         return L.transpose().template triangularView<Eigen::Upper>().solve(y);
     }
-
-
-    // Explicitly delete copy constructor/assignment
-    IncompleteCholeskyPreconditioner(const IncompleteCholeskyPreconditioner&) = delete;
-    IncompleteCholeskyPreconditioner& operator=(const IncompleteCholeskyPreconditioner&) = delete;
-
-    // Default move constructor/assignment
-    IncompleteCholeskyPreconditioner(IncompleteCholeskyPreconditioner&&) = default;
-    IncompleteCholeskyPreconditioner& operator=(IncompleteCholeskyPreconditioner&&) = default;
 };
 
 
