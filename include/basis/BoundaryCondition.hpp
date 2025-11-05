@@ -73,10 +73,10 @@ struct BoundaryCondition
             else if (this->is_expression())
             {
                 GiNaC::exmap m; 
-                m[vars[0]] = x * h; m[vars[1]] = y * h;
-                GiNaC::ex b_expr = std::get<GiNaC::ex>(*expr);
+                m[vars[0]]                   = x * h; m[vars[1]] = y * h;
+                GiNaC::ex b_expr             = std::get<GiNaC::ex>(*expr);
                 GiNaC::ex evaluated_boundary = b_expr.subs(m).evalf();
-                val = GiNaC::ex_to<GiNaC::numeric>(evaluated_boundary).to_double();
+                val                          = GiNaC::ex_to<GiNaC::numeric>(evaluated_boundary).to_double();
                 return val;
             }
         }

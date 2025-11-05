@@ -6,11 +6,11 @@
 template<typename Matrix, typename Vector>
 struct Multigrid
 {
-    double      tol       = DEFAULT_TOL;
-    int         max_iters = MAX_ITERS;
-    std::string name      = "Multigrid";
+    double                       tol       = DEFAULT_TOL;
+    int                          max_iters = MAX_ITERS;
+    std::string                  name      = "Multigrid";
     SolverLog<Eigen::VectorXd>   log;
-    Vector      final_solution;
+    Vector                       final_solution;
 
     Multigrid ()
     {

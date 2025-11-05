@@ -229,6 +229,7 @@ void evaluate_preconditioners ()
         Eigen::SparseMatrix<double> A_sparse = system.A;
         start = std::chrono::high_resolution_clock::now();
         auto precon_IC = IncompleteCholeskyPreconditioner<Eigen::VectorXd>(A_sparse);
+        // auto precon_IC = IC0.ic;
         end = std::chrono::high_resolution_clock::now();
         elapsed = end - start;
         PCG<Eigen::VectorXd, decltype(precon_IC)> PCG_IC(precon_IC, "IncompleteCholesky");
@@ -244,53 +245,68 @@ void evaluate_preconditioners ()
 
         laplace.fill_grid(system.u);
         system.reset_solution();
-        // break;
     }
 }
+
 
 
 int main ()
 {   
     // evaluate_loop();
-    evaluate_preconditioners();
+    // evaluate_preconditioners();
 
+    std::vector<GiNaC::symbol> variables;
+    GiNaC::symbol              x_("x"), y_("y"); 
 
-    // std::vector<GiNaC::symbol> variables;
-    // GiNaC::symbol              x_("x"), y_("y"); 
-    // int GRID_SIZE = 10;
+    variables.push_back(x_); 
+    variables.push_back(y_);
+    std::pair<std::pair<double, double>, std::pair<double, double>> domain;
+    domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
 
-    // variables.push_back(x_); 
-    // variables.push_back(y_);
-    // std::pair<std::pair<double, double>, std::pair<double, double>> domain;
-    // domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
+    GiNaC::ex top    = 4 * GiNaC::sin(3 * GiNaC::Pi * x_);
+    GiNaC::ex bottom = GiNaC::sin(GiNaC::Pi * x_);
+    double left      = 0;
+    double right     = 0;
 
-    // GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi);
-    // GiNaC::ex bottom = 0;
-    // double left      = 0;
-    // double right     = 0;
-    // // double left      = 4;
-    // // double right     = 5;
+    GiNaC::ex analytical_solution = (1 / GiNaC::sinh(GiNaC::Pi)) * GiNaC::sinh(GiNaC::Pi * (1 - y_)) * GiNaC::sin(GiNaC::Pi * x_)
+                                  + (4 / GiNaC::sinh(3 * GiNaC::Pi)) * GiNaC::sinh(3 * GiNaC::Pi * y_) * GiNaC::sin(3 * GiNaC::Pi * x_);
 
-    // GiNaC::ex analytical_solution = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi * y_);
+    std::vector<GiNaC::symbol> variables;
+    GiNaC::symbol              x_("x"), y_("y"); 
+    int GRID_SIZE = 10;
 
-    // Laplace2D<Eigen::VectorXd> laplace(GRID_SIZE, variables, domain);
-    // laplace.bc.top.expr    = top;
-    // laplace.bc.bottom.expr = bottom;
-    // laplace.bc.left.expr   = left;
-    // laplace.bc.right.expr  = right;
-    // laplace.initialise_grid();
-    // laplace.analytical_expression = analytical_solution;
+    variables.push_back(x_); 
+    variables.push_back(y_);
+    std::pair<std::pair<double, double>, std::pair<double, double>> domain;
+    domain = std::make_pair(std::make_pair(0.0, 1.0), std::make_pair(0.0, 1.0));
 
-    // // std::cout << laplace.grid << "\n\n";
+    GiNaC::ex top    = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi);
+    GiNaC::ex bottom = 0;
+    double left      = 0;
+    double right     = 0;
+    // double left      = 4;
+    // double right     = 5;
 
-    // laplace.evaluate_analytical_solution();
-    // // // std::cout << laplace.analytical_solution << "\n\n";
+    GiNaC::ex analytical_solution = GiNaC::sin(GiNaC::Pi * x_) * GiNaC::sinh(GiNaC::Pi * y_);
 
-    // LinearSystem<Eigen::VectorXd> system = laplace.construct_system();
-    // double omega_ = system.calc_omega_();
+    Laplace2D<Eigen::VectorXd> laplace(GRID_SIZE, variables, domain);
+    laplace.bc.top.expr    = top;
+    laplace.bc.bottom.expr = bottom;
+    laplace.bc.left.expr   = left;
+    laplace.bc.right.expr  = right;
+    laplace.initialise_grid();
+    laplace.analytical_expression = analytical_solution;
 
-    // std::cout << laplace.grid << "\n";
-    // std::cout << "Coefficient matrix:\n" << system.A << "\n";
+    // std::cout << laplace.grid << "\n\n";
+
+    laplace.evaluate_analytical_solution();
+    // // std::cout << laplace.analytical_solution << "\n\n";
+
+    LinearSystem<Eigen::VectorXd> system = laplace.construct_system();
+    double omega_ = system.calc_omega_();
+
+    std::cout << laplace.grid << "\n";
+    std::cout << "Coefficient matrix:\n" << system.A << "\n";
 
     // /* ------------------------- Usage example -------------------------*/
     // // int N = 5;
@@ -352,6 +368,56 @@ int main ()
     // std::cout << "Analytical:\n" << laplace.analytical_solution << "\n\n";
     // std::cout << "Analytical / approximation diff.:\n" << laplace.analytical_solution - laplace.grid << "\n";
     // system.reset_solution();
+
+
+
+
+    // for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
+    // {   
+    //     // if (dim == 30)
+    //     // {
+    //     //     break;
+    //     // }
+    //     std::cout << "===================================== GRID DIMENSION " << dim << " =====================================\n";
+    //     Laplace2D<Eigen::VectorXd> laplace(dim, variables, domain);
+    //     laplace.bc.top.expr           = top;
+    //     laplace.bc.bottom.expr        = bottom;
+    //     laplace.bc.left.expr          = left;
+    //     laplace.bc.right.expr         = right;
+    //     laplace.analytical_expression = analytical_solution;
+    //     laplace.initialise_grid();
+    //     laplace.evaluate_analytical_solution();
+
+
+    //     LinearSystem<Eigen::VectorXd> system = laplace.construct_system();
+    //     double omega_ = system.calc_omega_();
+
+
+    //     /* ==================== IC0 ================== */
+    //     Eigen::IncompleteCholesky<double> ic0;
+    //     ic0.compute(system.A);
+
+    //     // pieces from ic0
+    //     const SpMat& Ltil = ic0.matrixL();
+    //     const auto&  P    = ic0.permutationP();
+    //     const Vec&   s    = ic0.scalingS();
+
+    //     // L̃ L̃ᵀ
+    //     SpMat Mtil = Ltil * Ltil.transpose();
+
+    //     // Dinv = diag(1./s)
+    //     Eigen::DiagonalMatrix<double, Eigen::Dynamic> Dinv(s.cwiseInverse());
+
+    //     // Mhat = Dinv * Mtil * Dinv   (no need to materialize Dinv as SpMat)
+    //     SpMat Mhat = (Dinv * Mtil * Dinv).pruned();
+
+    //     // Map back: M = Pᵀ * Mhat * P
+    //     SpMat M = P.transpose() * Mhat * P;
+
+    //     std::cout << M << '\n';
+        
+    //     break;
+    // }
 
     return 0;
 }

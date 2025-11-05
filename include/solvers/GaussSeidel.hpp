@@ -20,7 +20,7 @@ struct GaussSeidel
     {
         log.tolerance      = tol;
         log.system_dim     = system.A.rows();
-        max_iters          = static_cast<int>(std::min(int(std::pow(log.system_dim, 1)), 50000));
+        max_iters          = static_cast<int>(int(std::pow(log.system_dim, 1)));
         log.max_iterations = max_iters;
         log.solver_name    = name;
     }

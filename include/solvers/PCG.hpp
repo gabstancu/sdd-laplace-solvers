@@ -11,7 +11,7 @@ struct PCG
     using SparseMatrix = Eigen::SparseMatrix<Scalar, Eigen::RowMajor>;
 
     double              tol        = DEFAULT_TOL;
-    int                 max_iters  = 1e6;
+    int                 max_iters  = INT_MAX;
     std::string         name       = "PCG";
     Precondition&       precon;
     std::string         precon_name;

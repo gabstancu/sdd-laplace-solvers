@@ -6,7 +6,7 @@
 template<typename Vector>
 struct Jacobi
 {
-    using Scalar      = typename Vector::Scalar;
+    using Scalar       = typename Vector::Scalar;
     using SparseMatrix = Eigen::SparseMatrix<Scalar, Eigen::RowMajor>;
 
 
@@ -21,7 +21,7 @@ struct Jacobi
     {
         log.tolerance      = tol;
         log.system_dim     = system.A.rows();
-        max_iters          = static_cast<int>(std::min(int(2 * std::pow(log.system_dim, 1)), 50000));
+        max_iters          = static_cast<int>(int(2 * std::pow(log.system_dim, 1)));
         log.max_iterations = max_iters;
         log.solver_name    = name;
     }
