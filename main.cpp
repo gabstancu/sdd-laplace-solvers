@@ -308,7 +308,7 @@ int main ()
     std::cout << laplace.grid << "\n";
     std::cout << "Coefficient matrix:\n" << system.A << "\n";
 
-    // /* ------------------------- Usage example -------------------------*/
+    // /* ------------------------- Usage -------------------------*/
     // // int N = 5;
 
     // // Eigen::MatrixXd A(N, N);
@@ -368,56 +368,6 @@ int main ()
     // std::cout << "Analytical:\n" << laplace.analytical_solution << "\n\n";
     // std::cout << "Analytical / approximation diff.:\n" << laplace.analytical_solution - laplace.grid << "\n";
     // system.reset_solution();
-
-
-
-
-    // for (int dim = START_GRID_DIMENSION; dim <= MAX_GRID_DIMENSION; dim+=STEP_SIZE)
-    // {   
-    //     // if (dim == 30)
-    //     // {
-    //     //     break;
-    //     // }
-    //     std::cout << "===================================== GRID DIMENSION " << dim << " =====================================\n";
-    //     Laplace2D<Eigen::VectorXd> laplace(dim, variables, domain);
-    //     laplace.bc.top.expr           = top;
-    //     laplace.bc.bottom.expr        = bottom;
-    //     laplace.bc.left.expr          = left;
-    //     laplace.bc.right.expr         = right;
-    //     laplace.analytical_expression = analytical_solution;
-    //     laplace.initialise_grid();
-    //     laplace.evaluate_analytical_solution();
-
-
-    //     LinearSystem<Eigen::VectorXd> system = laplace.construct_system();
-    //     double omega_ = system.calc_omega_();
-
-
-    //     /* ==================== IC0 ================== */
-    //     Eigen::IncompleteCholesky<double> ic0;
-    //     ic0.compute(system.A);
-
-    //     // pieces from ic0
-    //     const SpMat& Ltil = ic0.matrixL();
-    //     const auto&  P    = ic0.permutationP();
-    //     const Vec&   s    = ic0.scalingS();
-
-    //     // L̃ L̃ᵀ
-    //     SpMat Mtil = Ltil * Ltil.transpose();
-
-    //     // Dinv = diag(1./s)
-    //     Eigen::DiagonalMatrix<double, Eigen::Dynamic> Dinv(s.cwiseInverse());
-
-    //     // Mhat = Dinv * Mtil * Dinv   (no need to materialize Dinv as SpMat)
-    //     SpMat Mhat = (Dinv * Mtil * Dinv).pruned();
-
-    //     // Map back: M = Pᵀ * Mhat * P
-    //     SpMat M = P.transpose() * Mhat * P;
-
-    //     std::cout << M << '\n';
-        
-    //     break;
-    // }
 
     return 0;
 }

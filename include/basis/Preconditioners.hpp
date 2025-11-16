@@ -31,50 +31,6 @@ struct DiagonalPreconditioner
     }
 };
 
-// template<typename Vector>
-// struct SSORPreconditioner 
-// {
-//     SparseMatrix L, LT;
-//     Eigen::DiagonalMatrix<typename Vector::Scalar, Eigen::Dynamic> Dinv;
-//     double omega;
-
-//     SSORPreconditioner(const SparseMatrix& A, double omega_) : omega(omega_) 
-//     {
-//         // Get diagonal
-//         Eigen::VectorXd Dvec = A.diagonal();
-//         Dinv = Dvec.cwiseInverse().asDiagonal();
-
-//         // Create L = (D/ω) + strict lower triangular
-//         SparseMatrix Ltmp(A.rows(), A.cols());
-//         Ltmp.reserve(A.nonZeros());
-        
-//         for(int k = 0; k < A.outerSize(); ++k) 
-//         {
-//             for(SparseMatrix::InnerIterator it(A,k); it; ++it) 
-//             {
-//                 if(it.row() == it.col()) 
-//                 {
-//                     Ltmp.insert(it.row(), it.col()) = it.value()/omega;
-//                 }
-//                 else if(it.row() > it.col()) 
-//                 {
-//                     Ltmp.insert(it.row(), it.col()) = it.value();
-//                 }
-//             }
-//         }
-        
-//         L  = Ltmp;
-//         LT = L.transpose();
-//     }
-
-//     Vector apply(Vector& r) 
-//     {
-//         Vector y = L.triangularView<Eigen::Lower>().solve(r);
-//         y = Dinv * y;
-//         Vector z = LT.triangularView<Eigen::Upper>().solve(y);
-//         return (omega/(2.0-omega)) * z;
-//     }
-// };
 
 template<typename Vector, typename SparseMatrix = Eigen::SparseMatrix<typename Vector::Scalar>>
 struct SSORPreconditioner
@@ -149,78 +105,6 @@ struct SSORPreconditioner
     }
 };
 
-
-// template<typename Vector>
-// struct IncompleteCholeskyPreconditioner 
-// {   
-
-//     using Scalar       = typename Vector::Scalar;
-//     using Triplet      = Eigen::Triplet<Scalar>;
-
-//     SparseMatrix L; // lower triangular factor
-
-//     IncompleteCholeskyPreconditioner(const SparseMatrix&  A) 
-//     {
-//         int n = A.rows();
-//         L.resize(n, n);
-
-//         std::vector<Triplet> triplets;
-//         triplets.reserve(A.nonZeros() / 2 + n);
-
-//         for (int i = 0; i < A.rows(); ++i)
-//         {
-//             for (typename SparseMatrix::InnerIterator it(A, i); it; ++it)
-//             {
-//                 int j = it.col();
-
-//                 if (i >= j)
-//                 {
-//                     triplets.emplace_back(i, j, it.value());
-//                 }
-//             }
-//         }
-//         L.setFromTriplets(triplets.begin(), triplets.end());
-
-//         // IC(0) factorisation, no fill-in
-//         for (int j = 0; j < n; ++j) {
-//             // Diagonal entry
-//             Scalar& L_jj = L.coeffRef(j, j);
-//             L_jj = std::sqrt(L_jj);
-
-//             // Update column j
-//             for (int i = j + 1; i < n; ++i) {
-//                 if (L.coeff(i, j) != 0) 
-//                 {
-//                     L.coeffRef(i, j) /= L_jj;
-//                 }
-//             }
-
-//             // Update remaining submatrix
-//             for (int k = j + 1; k < n; ++k) {
-//                 if (L.coeff(k, j) != 0) 
-//                 {
-//                     const Scalar L_kj = L.coeff(k, j);
-//                     for (typename SparseMatrix::InnerIterator it(L, k); it && it.col() <= j; ++it) 
-//                     {
-//                         const int i = it.col();
-//                         if (i == j) 
-//                         {
-//                             it.valueRef() -= L_kj * L_kj;
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//         L.makeCompressed();
-//     }
-
-
-//     Vector apply(const Vector& r) const 
-//     {
-//         Vector y = L.template triangularView<Eigen::Lower>().solve(r);
-//         return L.transpose().template triangularView<Eigen::Upper>().solve(y);
-//     }
-// };
 
 template<typename Vector, typename Scalar = typename Vector::Scalar>
 struct IncompleteCholeskyPreconditioner
@@ -312,30 +196,27 @@ struct IncompleteCholeskyPreconditioner
 };
 
 
-// using Sparse = Eigen::SparseMatrix<double>;
-// using Vector = Eigen::VectorXd;
+using SparseMatrix = Eigen::SparseMatrix<double, Eigen::RowMajor>;
+using Vector       = Eigen::VectorXd;
 
-// struct IncompleteCholeskyPreconditioner {
-//     // Lower, AMD ordering (defaults are fine too)
-//     Eigen::IncompleteCholesky<double, Eigen::Lower, Eigen::AMDOrdering<int>> ic;
+struct IC0
+{
+    Eigen::IncompleteCholesky<double> ic;
 
-//     // shift>=0: diagonal shift τI if you need extra robustness
-//     void compute(const Sparse& A, double shift = 0.0) {
-//         if (shift == 0.0) {
-//         ic.compute(A);
-//         } else {
-//         Sparse I(A.rows(), A.cols());
-//         I.setIdentity();
-//         ic.compute(A + shift * I);         // portable way to “setShift”
-//         }
-//         // if(ic.info() != Eigen::Success) ... handle failure
-//     }
+    void compute (const SparseMatrix& A)
+    {
+        ic.setInitialShift(1e-10);
+        ic.compute(A);
+        if (ic.info() != Eigen::Success) 
+        {
+            throw std::runtime_error("IC(0) factorisation failed");
+        }
+    }
 
-//     // z = M^{-1} r
-//     Vector apply(const Vector& r) const { return ic.solve(r); }
-
-//     // (optional) access L for spectral work, if your Eigen exposes it
-//     const auto& L() const { return ic.matrixL(); }   // may need a recent Eigen
-// };
+    // z = M^{-1} r
+    void apply(const Vector& r, Vector& z) const {
+        z = ic.solve(r);                  // forward+backward triangular solves
+    }
+};
 
 #endif // PRECONDITIONERS_HPP

@@ -10,11 +10,9 @@ inline std::string get_home_directory ()
     return home ? std::string(home) : "";
 }
 
-
 inline std::string get_current_working_directory() 
 {
     return std::filesystem::current_path().string();
 }
-
 
 #endif // HELPER_HPP
